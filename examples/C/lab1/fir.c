@@ -1,17 +1,18 @@
 // Troy Kaufman
 // troykaufman28@gmail.com
 
+// Q3.7
+// # of cycles needed to complete algorithm (includes optimization)
+// -NA: mcycle = 6444   (if print statement -> 433249)
+// -O:  mcycle = 763    (if print statement -> 158949)
+// -O2: mcycle = 766    (if print statement -> 123149)
+
 // This files implements an FIR filter in C and can use RISC-V assembly code as the implementation
 
 #include <stdio.h>  // supports printf
 #include "util.h"   // supports verify
 
 extern void fir(int [], int [], int [], int, int);
-
-// # of cycles needed to complete algorithm (includes optimization)
-// -NA: mcycle = 6444   (if print statement -> 433249)
-// -O:  mcycle = 763    (if print statement -> 158949)
-// -O2: mcycle = 766    (if print statement -> 123149)
 
 // Add two Q1.31 fixed point numbers
 int add_q31(int a, int b) {

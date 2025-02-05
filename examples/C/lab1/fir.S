@@ -2,8 +2,12 @@
 // Troy Kaufman
 // troykaufman28@gmail.com
 
-/*
-    The optimized version of this assembly code took ____ cycles to complete. 
+/*  Q3.8
+    The optimized version of this assembly code took 1597 cycles to complete. 
+    My hand coded assembly was far slower than the optimized C code implementation.
+    My code was slower than the optimized C code because my assembly implementation
+    used lots of stores and loads that were in fact unnecessary. Additionally, I see that
+    the C code objdump has a more efficient algorithm than my assembly version. 
 */
 
 // FIR filter implementation in assembly
