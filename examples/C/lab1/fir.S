@@ -25,7 +25,6 @@ mul_q31:
     ret
 
 fir:
-    # Prologue
     addi sp, sp, -48   # Allocate stack space
     sd ra, 40(sp)      # Save return address
     sd s0, 32(sp)      # Save callee-saved registers
@@ -46,16 +45,14 @@ fir:
    
     li t0, 0          # j counter (outer loop)
 
-
-outer_loop:
-    bge t0, s0, end_outer    # if j >= (n-m+1), exit loop
+loop_i:
+    bge t0, s0, end_i    # if j >= (n-m+1), exit loop
    
     li t3, 0          # Initialize sum = 0
     li t1, 0          # i counter (inner loop)
 
-
-inner_loop:
-    bgt t1, s1, end_inner    # if i > m-1, exit inner loop
+loop_j:
+    bgt t1, s1, end_j    # if i > m-1, exit inner loop
    
     # Calculate indices and load values
     sub t4, t0, t1     # t4 = j - i
@@ -75,20 +72,20 @@ inner_loop:
     mv t3, a0          # Store result back to accumulator
    
     addi t1, t1, 1     # i++
-    j inner_loop
+    j loop_j
 
 
-end_inner:
+end_j:
     # Store result
     slli t6, t0, 2     # Convert j to byte offset
     add t6, s4, t6     # Address of y[j]
     sw t3, 0(t6)       # Store sum to y[j]
    
     addi t0, t0, 1     # j++
-    j outer_loop
+    j loop_i
 
 
-end_outer:
+end_i:
     ld s4, 0(sp)       # Restore callee-saved registers
     ld s3, 8(sp)
     ld s2, 16(sp)
