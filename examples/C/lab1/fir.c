@@ -1,3 +1,8 @@
+// Troy Kaufman
+// troykaufman28@gmail.com
+
+// This files implements an FIR filter in C and can use RISC-V assembly code as the implementation
+
 #include <stdio.h>  // supports printf
 #include "util.h"   // supports verify
 
@@ -7,7 +12,6 @@ extern void fir(int [], int [], int [], int, int);
 // -NA: mcycle = 6444   (if print statement -> 433249)
 // -O:  mcycle = 763    (if print statement -> 158949)
 // -O2: mcycle = 766    (if print statement -> 123149)
-
 
 // Add two Q1.31 fixed point numbers
 int add_q31(int a, int b) {
@@ -25,7 +29,7 @@ int mul_q31(int a, int b) {
     //printf("mul_q31: a = %x, b = %x, res = %lx, result = %x\n", a, b, res, result);
     return result;
 }
-/*
+
 // low pass filter x with coefficients c, result in y
 // n is the length of x, m is the length of c
 // y[i] = c[0]*x[i] + c[1]*x[i+1] + ... + c[m-1]*x[i+m-1]
@@ -42,7 +46,7 @@ void fir(int x[], int c[], int y[], int n, int m) {
         y[i] = round_val;
     }
 }
-*/
+
 int main(void) {
     int32_t sin_table[20] = { // in Q1.31 format
         0x00000000, // sin(0*2pi/10)

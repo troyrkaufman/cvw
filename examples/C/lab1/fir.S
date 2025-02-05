@@ -1,23 +1,24 @@
 // fir.S
 // Troy Kaufman
+// troykaufman28@gmail.com
 
+/*
+    The optimized version of this assembly code took ____ cycles to complete. 
+*/
 
 // FIR filter implementation in assembly
 
 
 .global fir
 
-
 add_q31:
     addw a0, a0, a1    # Add a + b (word-sized)
     ret
-
 
 mul_q31:
     mul a0, a0, a1     # Multiply a0 * a1
     srai a0, a0, 31    # Shift right to maintain Q31 format
     ret
-
 
 fir:
     # Prologue
@@ -28,7 +29,6 @@ fir:
     sd s2, 16(sp)
     sd s3, 8(sp)
     sd s4, 0(sp)
-
 
     # Initialize loop bounds
     sub s0, a3, a4     # s0 = n - m
@@ -85,7 +85,6 @@ end_inner:
 
 
 end_outer:
-    # Epilogue
     ld s4, 0(sp)       # Restore callee-saved registers
     ld s3, 8(sp)
     ld s2, 16(sp)
