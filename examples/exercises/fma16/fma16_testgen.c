@@ -18,6 +18,10 @@ typedef union sp {
 uint16_t easyExponents[] = {15, 0x8000};
 uint16_t easyFracts[] = {0, 0x200, 0x8000}; // 1.0 and 1.1
 
+// additional lists for normal multiplicaiton
+uint16_t medExponents[] = {17, 0x8000};
+uint16_t medFracts[] = {0x600, 0x100, 0x8000};
+
 void softfloatInit(void) {
     softfloat_roundingMode = softfloat_round_minMag; 
     softfloat_exceptionFlags = 0;
@@ -135,13 +139,14 @@ int main()
     softfloatInit(); // configure softfloat modes
  
     // Test cases: multiplication
-    genMulTests(easyExponents, easyFracts, 0, "fmul_0", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
+    //genMulTests(easyExponents, easyFracts, 0, "fmul_0v1", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
 
 /*  // example of how to generate tests with a different rounding mode
     softfloat_roundingMode = softfloat_round_near_even; 
     genMulTests(easyExponents, easyFracts, 0, "fmul_0_rne", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RNE", 1, 0, 0, 0); */
 
     // Add your cases here
+    genMulTests(medExponents, medFracts, 0, "fmul_1", "// Multiply with exponent of non-zero, more complex significand, RZ", 0, 0, 0, 0);
   
     return 0;
 }
