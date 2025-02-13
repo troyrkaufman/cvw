@@ -19,8 +19,8 @@ uint16_t easyExponents[] = {15, 0x8000};
 uint16_t easyFracts[] = {0, 0x200, 0x8000}; // 1.0 and 1.1
 
 // additional lists for normal multiplicaiton
-uint16_t medExponents[] = {17, 0x8000};
-uint16_t medFracts[] = {0x600, 0x100, 0x8000};
+uint16_t medExponents[] = {25, 14, 0x1c, 0x14, 0x00, 0x8000};
+uint16_t medFracts[] = {0x240, 0x0a0, 0x11e, 0x018, 0x000, 0x8000};
 
 void softfloatInit(void) {
     softfloat_roundingMode = softfloat_round_minMag; 
@@ -146,7 +146,7 @@ int main()
     genMulTests(easyExponents, easyFracts, 0, "fmul_0_rne", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RNE", 1, 0, 0, 0); */
 
     // Add your cases here
-    genMulTests(medExponents, medFracts, 0, "fmul_1", "// Multiply with exponent of non-zero, more complex significand, RZ", 0, 0, 0, 0);
+    genMulTests(medExponents, medFracts, 1, "fmul_2", "// Tests for zero, inf, NaN, subnorms, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
   
     return 0;
 }
