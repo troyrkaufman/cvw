@@ -19,6 +19,13 @@ uint16_t easyExponents[] = {15, 0x8000};
 uint16_t easyFracts[] = {0, 0x200, 0x8000}; // 1.0 and 1.1
 
 // additional lists for normal multiplicaiton
+/*
+uint16_t medExponents[] = {25, 14, 0x1c, 0x14, 0x00, 0x8000};
+uint16_t medFracts[] = {0x240, 0x0a0, 0x11e, 0x018, 0x000, 0x8000};
+*/
+
+// test for addition with zero and inf corner cases
+// additional lists for normal multiplicaiton...Need to fix!
 uint16_t medExponents[] = {25, 14, 0x1c, 0x14, 0x00, 0x8000};
 uint16_t medFracts[] = {0x240, 0x0a0, 0x11e, 0x018, 0x000, 0x8000};
 
@@ -133,6 +140,33 @@ void genMulTests(uint16_t *e, uint16_t *f, int sgn, char *testName, char *desc, 
     fclose(fptr);
 }
 
+void genAddTests(uint16_t *e, uint16_t *f, int sgn, char *testName, char *desc, int roundingMode, int zeroAllowed, int infAllowed, int nanAllowed) {
+    int i, j, k, numCases;
+    float16_t x, y, z;
+    float16_t cases[100000];
+    FILE *fptr;
+    char fn[80];
+ 
+    sprintf(fn, "work/%s.tv", testName);
+    if ((fptr = fopen(fn, "w")) == 0) {
+        printf("Error opening to write file %s.  Does directory exist?\n", fn);
+        exit(1);
+    }
+    prepTests(e, f, testName, desc, cases, fptr, &numCases);
+    y.v = 0x3c00;
+    for (i=0; i < numCases; i++) { 
+        x.v = cases[i].v;
+        for (j=0; j<numCases; j++) {
+            z.v = cases[j].v;
+            for (k=0; k<=sgn; k++) {
+                z.v ^= (k<<15);
+                genCase(fptr, x, y, z, 0, 1, 0, 0, roundingMode, zeroAllowed, infAllowed, nanAllowed);
+            }
+        }
+    }
+    fclose(fptr);
+}
+
 int main()
 {
     if (system("mkdir -p work") != 0) exit(1); // create work directory if it doesn't exist
@@ -146,7 +180,10 @@ int main()
     genMulTests(easyExponents, easyFracts, 0, "fmul_0_rne", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RNE", 1, 0, 0, 0); */
 
     // Add your cases here
-    genMulTests(medExponents, medFracts, 1, "fmul_2", "// Tests for zero, inf, NaN, subnorms, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
-  
+    //genMulTests(medExponents, medFracts, 0, "fmul_1", "// Tests for zero, inf, NaN, subnorms, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
+    //genMulTests(medExponents, medFracts, 1, "fmul_2", "// Tests for zero, inf, NaN, subnorms, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
+    genAddTests(medExponents, medFracts, 0, "fadd_1", "// Tests for zero, inf, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
+    genAddTests(medExponents, medFracts, 1, "fadd_2", "// Tests for zero, inf, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
+    
     return 0;
 }
