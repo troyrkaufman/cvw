@@ -27,22 +27,13 @@ uint16_t medAddExponents[] = {1, 14, 15, 16, 29, 30, 0x8000};
 uint16_t medAddFracts[] = {0x000, 0x001, 0x1FF, 0x200, 0x3FF, 0x8000};
 
 // simple mult-add corner cases
+uint16_t medMulAddExponents[] = {1, 14, 15, 16, 29, 30, 0x8000};
+uint16_t medMulAddFracts[] = {0x000, 0x001, 0x1FF, 0x200, 0x3FF, 0x8000};
 
-/*
-// additional lists for normal multiplicaiton
-uint16_t medMulExponents[] = {25, 14, 0x1c, 0x14, 0x00, 0x8000};
-uint16_t medMulFracts[] = {0x240, 0x0a0, 0x11e, 0x018, 0x000, 0x8000};
+// special inputs for corner case
+uint16_t specialExponents[] = {0, 31, 15, 0x8000};
+uint16_t specialFracts[] = {0x000, 0x200, 0x3d1, 0x8000};
 
-
-// test for addition with zero and inf corner cases
-// additional lists for normal multiplicaiton...Need to fix!
-uint16_t medAddExponents[] = {14, 15, 2, 1, 16, 0x8000};
-uint16_t medAddFracts[] = {0x96e, 0xb53, 0xa80, 0x2f8, 0x8000};
-
-// lists of tests for fmuladd
-uint16_t medMulAddExponents[] = {15, 16, 24, 0x8000};
-uint16_t medMulAddFracts[] = {0x200, 0x3d1, 0x8000};
-*/
 void softfloatInit(void) {
     softfloat_roundingMode = softfloat_round_minMag; 
     softfloat_exceptionFlags = 0;
@@ -172,7 +163,7 @@ void genAddTests(uint16_t *e, uint16_t *f, int sgn, char *testName, char *desc, 
         x.v = cases[i].v;
         for (j=0; j<numCases; j++) {
             z.v = cases[j].v;
-            for (k=0; k<=sgn; k++) {
+            for (k=0; k<=sgn; k++) {    
                 z.v ^= (k<<15);
                 genCase(fptr, x, y, z, 0, 1, 0, 0, roundingMode, zeroAllowed, infAllowed, nanAllowed);
             }
@@ -202,8 +193,10 @@ void genMulAddTests(uint16_t *e, uint16_t *f, int sgn, char *testName, char *des
             for (l=0; l < numCases; l++){
                 z.v = cases[l].v;
                 for (k=0; k<=sgn; k++) {
+                    x.v ^= (k<<15);
+                    y.v ^= (k<<15);
                     z.v ^= (k<<15);
-                    genCase(fptr, x, y, z, 0, 1, 0, 0, roundingMode, zeroAllowed, infAllowed, nanAllowed);
+                    genCase(fptr, x, y, z, 1, 1, 0, 0, roundingMode, zeroAllowed, infAllowed, nanAllowed);
             }
             }
         }
@@ -223,13 +216,20 @@ int main()
     softfloat_roundingMode = softfloat_round_near_even; 
     genMulTests(easyExponents, easyFracts, 0, "fmul_0_rne", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RNE", 1, 0, 0, 0); */
 
-    // Add your cases here
-    genMulTests(medMulExponents, medMulFracts, 0, "fmul_1", "// Tests for normalized postive inputs, RZ", 0, 0, 0, 0);
-    genMulTests(medMulExponents, medMulFracts, 1, "fmul_2", "// Tests for normalized negative inputs, RZ", 0, 0, 0, 0);
-    //genAddTests(medExponents, medFracts, 0, "fadd_1", "// Tests for zero, inf, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
-    //genAddTests(medExponents, medFracts, 1, "fadd_2", "// Tests for zero, inf, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
-    //genMulAddTests(medMulAddExponents, medMulAddFracts, 0, "fmu1add_1", "// Tests for zero, inf, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
-    //genMulAddTests(medMulAddExponents, medMulAddFracts, 1, "fmu1add_2", "// Tests for zero, inf, and a regular multiplication scenario, RZ", 0, 0, 0, 0);
-    
+    // Multiply Cases
+
+    // Addition Cases
+
+    // FMA Cases
+
+    // Special Cases
+    softfloat_roundingMode = softfloat_round_minMag;
+    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rz", "// Tests for special inputs, RZ", 1, 0, 0, 0);
+    //softfloat_roundingMode = softfloat_round_near_even;
+    //genMulAddTests(specialExponents, specialAddFracts, 1, "fma_special_rne", "// Tests for special inputs, RZ", 0, 0, 0, 0);
+    softfloat_roundingMode = softfloat_round_min;
+    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rm", "// Tests for special inputs, RM", 1, 0, 0, 0);
+    softfloat_roundingMode = softfloat_round_max;
+    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rp", "// Tests for special inputs, RP", 1, 0, 0, 0);
     return 0;
 }
