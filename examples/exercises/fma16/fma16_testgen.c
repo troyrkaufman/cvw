@@ -233,7 +233,7 @@ int main()
     softfloat_roundingMode = softfloat_round_minMag;
     genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rz", "// Tests for special inputs, RZ", 1, 0, 0, 0);
     softfloat_roundingMode = softfloat_round_near_even;
-    genMulAddTests(specialExponents, specialAddFracts, 1, "fma_special_rne", "// Tests for special inputs, RZ", 1, 0, 0, 0);
+    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rne", "// Tests for special inputs, RZ", 1, 0, 0, 0);
     softfloat_roundingMode = softfloat_round_min;
     genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rm", "// Tests for special inputs, RM", 1, 0, 0, 0);
     softfloat_roundingMode = softfloat_round_max;
