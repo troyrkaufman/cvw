@@ -76,7 +76,7 @@ void genCase(FILE *fptr, float16_t x, float16_t y, float16_t z, int mul, int add
         (softfloat_exceptionFlags >> 1) % 2,
         (softfloat_exceptionFlags) % 2);
     // pack these four flags into one nibble, discarding DZ flag
-    flagVals = softfloat_exceptionFlags & 0x7 | ((softfloat_exceptionFlags >> 1) & 0x8);
+    flagVals = softfloat_exceptionFlags & 0x7 | ((softfloat_exceptionFlags) >> 1 & 0x8);
 
     // convert to floats for printing
     xf = convFloat(x);
@@ -93,7 +93,7 @@ void genCase(FILE *fptr, float16_t x, float16_t y, float16_t z, int mul, int add
     float16_t resultmag = result;
     resultmag.v &= 0x7FFF; // take absolute value
     if (f16_lt(resultmag, smallest) && (resultmag.v != 0x0000)) fprintf (fptr, "// skip denorm: ");
-    if ((softfloat_exceptionFlags) >> 1 % 2) fprintf(fptr, "// skip underflow: ");
+    if ((softfloat_exceptionFlags >> 1) % 2) fprintf(fptr, "// skip underflow: ");
 
     // skip special cases if requested
     if (resultmag.v == 0x0000 && !zeroAllowed) fprintf(fptr, "// skip zero: ");

@@ -96,7 +96,7 @@ module alu import cvw::*; #(parameter cvw_t P) (
       3'b000: FullResult = Sum;                            // add or sub (including address generation)
       3'b001: FullResult = Shift;                          // sll, sra, or srl
       3'b010: FullResult = {{(P.XLEN-1){1'b0}}, LT};       // slt
-      3'b011: FullResult = {{(P.XLEN-1){1'b0}}, LT};      // sltu
+      3'b011: FullResult = {{(P.XLEN-1){1'b0}}, LTU};      // sltu
       3'b100: FullResult = A ^ CondMaskInvB;               // xor, xnor, binv
       3'b101: FullResult = (P.ZBS_SUPPORTED) ? {{(P.XLEN-1){1'b0}},{|(AndResult)}} : Shift; // bext (or IEU shift when BMU not supported)
       3'b110: FullResult = A | CondMaskInvB;               // or, orn, bset

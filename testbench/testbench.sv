@@ -236,6 +236,7 @@ module testbench;
         "arch32zfh_divsqrt":     if (P.ZFH_SUPPORTED)     tests = arch32zfh_divsqrt;
         "arch32zfaf":    if (P.ZFA_SUPPORTED)     tests = arch32zfaf;
         "arch32zfad":    if (P.ZFA_SUPPORTED & P.D_SUPPORTED)  tests = arch32zfad;
+        //"buildroot":                              tests = buildroot;   // I just added this in - Troy
         "arch32zbkb":    if (P.ZBKB_SUPPORTED)    tests = arch32zbkb;
         "arch32zbkc":    if (P.ZBKC_SUPPORTED)    tests = arch32zbkc;
         "arch32zbkx":    if (P.ZBKX_SUPPORTED)    tests = arch32zbkx;
@@ -330,7 +331,7 @@ module testbench;
     endcase
   end // always_comb
   // fsm output control logic
-  assign reset_ext = 1 | CurrState == STATE_TESTBENCH_RESET | CurrState == STATE_INIT_TEST |
+  assign reset_ext =  CurrState == STATE_TESTBENCH_RESET | CurrState == STATE_INIT_TEST |
                      CurrState == STATE_RESET_MEMORIES | CurrState == STATE_RESET_MEMORIES2 |
                      CurrState == STATE_LOAD_MEMORIES | CurrState ==STATE_RESET_TEST;
   // this initialization is very expensive, only do it for coremark.

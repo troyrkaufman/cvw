@@ -313,7 +313,8 @@ module ifu import cvw::*;  #(parameter cvw_t P) (
 
   mux3 #(P.XLEN) pcmux3(PC2NextF, EPCM, TrapVectorM, {TrapM, RetM}, UnalignedPCNextF);
   mux2 #(P.XLEN) pcresetmux({UnalignedPCNextF[P.XLEN-1:1], 1'b0}, P.RESET_VECTOR[P.XLEN-1:0], reset, PCNextF);
-  flopen #(P.XLEN) pcreg(clk, ~StallF | reset, PCNextF, PCF);
+  flopen #(P.XLEN) pcreg(clk, ~StallF | reset, PCNextF, PCF); // Troy Changed this line 2/20
+    //flopenr #(P.XLEN) pcreg(clk, ~reset, ~StallF, PCNextF, PCF);
 
   // pcadder
   // add 2 or 4 to the PC, based on whether the instruction is 16 bits or 32
@@ -397,7 +398,8 @@ module ifu import cvw::*;  #(parameter cvw_t P) (
   // Instruction and PC pipeline registers flush to NOP, not zero
   mux2    #(32)     FlushInstrEMux(InstrD, nop, FlushE, NextInstrD);
   flopenr #(32)     InstrEReg(clk, reset, ~StallE, NextInstrD, InstrE);
-  flopenr #(P.XLEN) PCEReg(clk, reset, ~StallE, PCD, PCE);
+  flopenr #(P.XLEN) PCEReg(clk, reset, ~StallE, PCD, PCE); // Troy commented this out
+  //flopenrc #(P.XLEN) PCEReg(clk, reset, FlushE, ~StallE, PCD, PCE);
 
   // InstrM is only needed with CSRs or atomic operations
   if (P.ZICSR_SUPPORTED | P.ZAAMO_SUPPORTED | P.ZALRSC_SUPPORTED) begin
@@ -406,7 +408,8 @@ module ifu import cvw::*;  #(parameter cvw_t P) (
   end else assign InstrM = '0;
   // PCM is only needed with CSRs or branch prediction
   if (P.ZICSR_SUPPORTED | P.BPRED_SUPPORTED) 
-    flopenr #(P.XLEN) PCMReg(clk, reset, ~StallM, PCE, PCM);
+    flopenr #(P.XLEN) PCMReg(clk, reset, ~StallM, PCE, PCM); //Troy commented out this line
+    //flopenrc #(P.XLEN) PCMReg(clk, reset, FlushM, ~StallM, PCE, PCM);
   else assign PCM = '0; 
   
   // If compressed instructions are supported, increment PCLink by 2 or 4 for a jal.  Otherwise, just by 4
