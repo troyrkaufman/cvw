@@ -35,42 +35,30 @@ module mul #(parameter XLEN) (
   output logic [XLEN*2-1:0]   ProdM                           // double-widthproduct
 );
 
-  logic [XLEN*2-1:0]  Pprime;                                  // partial products
-  logic [XLEN-1:0]  PP1LE                                     // lower partial products
-  logic [XLEN-1:0]  PP1UE, PP2UE, PP3UE, PP4UE;               // upper partial products
-  logic [XLEN*2-1:0]  PP1M, PP2M, PP3M, PP4M;               // registered partial products
- 
+  logic [XLEN*2-1:0]  PP1M, PP2M, PP3M, PP4M;                 // registered partial products
+  logic [XLEN*2-1:0]  PP1E, PP2E, PP3E, PP4E;                 // calculated partial products
+  logic [XLEN-1:0]    Aprime, Bprime;                         // contains [XLEN-2:0] of original signal's bits
+  //logic [XLEN*2-1:0]  Pprime;                               // P' = A' * B' = PP1E...We can just set PP1E equal to this
+  logic [XLEN-2:0]    PA, PB;                                 // PA = BM * A'; PB = AM *B';
+  logic               PM                                      // PM = AM * BM
+  logic               mulhs, mulhsu;                          // flags to determine what to set P4 (partial product 4) equal to
+  
   //////////////////////////////
   // Execute Stage: Compute partial products
   //////////////////////////////
 
-  // mul - [31:0] lower bits
-  assign Pprime = ForwardedSrcAE[XLEN-2:0] * ForwardedSrcBE[XLEN-2:0]; 
-  assign PP1LE = Pprime[XLEN-1:0];
-    
-  case(Funct3E) 
-    // mulh - [63:32] high signed signed
-    3'b001: begin
-      PP1E = ForwardedSrcAE[XLEN*2-2:32] * ForwardedSrcBE[XLEN*2-2:32];
-      PP2E = 
-      PP3E = 
-      PP4E = 
-    end
-    // mulhsu [63:32] high signed unsigned
-    3'b010: begin 
-      PP1E = ForwardedSrcAE[XLEN-2:0] * ForwardedSrcBE[XLEN-2:0];
-      PP2E = 
-      PP3E = 
-      PP4E = 
-    end
-    // mulhu [63:32] high unisgned unsigned
-    3'b011: begin
-      PP1E = ForwardedSrcAE[XLEN-2:0] * ForwardedSrcBE[XLEN-2:0];
-      PP2E = 
-      PP3E = 
-      PP4E = 
-    end
-  endcase
+  // calculate intermediate steps mainly using AND gates instead of *
+  assign Aprime = {1'b0, ForwardedSrcAE[XLEN-2:0]};
+  assign Bprime = {1'b0, ForwardedSrcBE[XLEN-2:0]};
+  assign PP1E = Aprime * Bprime;
+
+  assign PA = {(XLEN-1){ForwardedSrcBE}} & ForwardedSrcAE[XLEN-2:0];
+  assign BM = {(XLEN-1){ForwardedSrcAE}} & ForwardedSrcBE[XLEN-2:0];
+
+  assign PM = AM & PM;
+
+  // calculate P2 and P3
+  assign PP2E = {[XLEN-1:XLEN]{1'b0}, }
 
   //////////////////////////////
   // Memory Stage: Sum partial proudcts
