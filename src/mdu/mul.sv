@@ -38,11 +38,10 @@ module mul #(parameter XLEN) (
   logic [XLEN*2-1:0]  PP1M, PP2M, PP3M, PP4M;                 // registered partial products
   logic [XLEN*2-1:0]  PP1E, PP2E, PP3E, PP4E;                 // calculated partial products
   logic [XLEN-1:0]    Aprime, Bprime;                         // contains [XLEN-2:0] of original signal's bits
-  //logic [XLEN*2-1:0]  Pprime;                               // P' = A' * B' = PP1E...We can just set PP1E equal to this
   logic [XLEN-2:0]    PA, PB;                                 // PA = BM * A'; PB = AM *B';
-  logic               PM                                      // PM = AM * BM
-  logic               mulhs, mulhsu;                          // flags to determine what to set P4 (partial product 4) equal to
-  
+  logic               PM;                                     // PM = AM * BM
+  logic               mulsh, mulshu;                          // flags indicating mult type
+
   //////////////////////////////
   // Execute Stage: Compute partial products
   //////////////////////////////
@@ -52,13 +51,27 @@ module mul #(parameter XLEN) (
   assign Bprime = {1'b0, ForwardedSrcBE[XLEN-2:0]};
   assign PP1E = Aprime * Bprime;
 
-  assign PA = {(XLEN-1){ForwardedSrcBE}} & ForwardedSrcAE[XLEN-2:0];
-  assign BM = {(XLEN-1){ForwardedSrcAE}} & ForwardedSrcBE[XLEN-2:0];
+  assign PA = {(XLEN-1){ForwardedSrcBE[XLEN-1]}} & ForwardedSrcAE[XLEN-2:0];
+  assign PB = {(XLEN-1){ForwardedSrcAE[XLEN-1]}} & ForwardedSrcBE[XLEN-2:0];
 
-  assign PM = AM & PM;
+  assign PM = ForwardedSrcAE[XLEN-1] & ForwardedSrcBE[XLEN-1];
 
-  // calculate P2 and P3
-  assign PP2E = {[XLEN-1:XLEN]{1'b0}, }
+  assign mulsh = (Funct3E == 3'b001);
+  assign mulshu = (Funct3E == 3'b010);
+
+  // calculate P2 and P3 - mulhs / mulhsu / mulhu
+  assign PP2E = (mulsh == 1'b1) ? {{2{1'b0}}, ~PA, {(XLEN-1){1'b0}}} : (mulshu == 1'b1) ? {{2{1'b0}}, PA, {(XLEN-1){1'b0}}} : {{2{1'b0}}, PA, {(XLEN-1){1'b0}}};
+  assign PP3E = (mulsh == 1'b1) ? {{2{1'b0}}, ~PB, {(XLEN-1){1'b0}}} : (mulshu == 1'b1) ? {{2{1'b0}}, ~PB, {(XLEN-1){1'b0}}} : {{2{1'b0}}, PB, {(XLEN-1){1'b0}}};
+
+  // calcualte P4
+  always_comb
+    begin
+      case(Funct3E)
+        3'b001: PP4E = {1'b1, PM, {(XLEN-3){1'b0}}, 1'b1, {(XLEN){1'b0}}};
+        3'b010: PP4E = {1'b1, ~PM, {(XLEN-2){1'b0}}, 1'b1, {(XLEN-1){1'b0}}};
+        default: PP4E = {1'b0, PM, {(XLEN*2-2){1'b0}}};
+      endcase
+    end
 
   //////////////////////////////
   // Memory Stage: Sum partial proudcts
