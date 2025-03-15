@@ -21,6 +21,9 @@ logic [15:0]    finalmant;
 
 assign flags = 4'b0;
 
+// Instantiate the multiply module
+// Create addition module
+
 always_comb begin : fma16
     // Multiply the mantissas with the implicit 1 as a prefix
     multmant = {1'b1, x[9:0]} * {1'b1, y[9:0]};
