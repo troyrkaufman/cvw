@@ -13,17 +13,35 @@ module fma16(input logic  [15:0]    x, y, z,
              output logic [15:0]    result, 
              output logic [3:0]     flags);
 
-logic           sign;
-logic [4:0]     exp;
-logic [21:0]    multmant;
-logic [9:0]     shiftmant;
-logic [15:0]    finalmant;
+    logic [15:0] product;
 
-assign flags = 4'b0;
+    fmamult multunit(.x(x), .y(y), .roundmode(roundmode), .product(product), .flags(flags));
+
+    assign result = product;
+    
+    // For debugging. X2GO is too slow to debug with
+    // $display("X: %b", x[14:10]);
+    // $display("Y: %b", y[14:10]);
+    // $display("Multmant: %b ", multmant);
+    // $display("Shiftmant: %b ", shiftmant);
+    // $display("exp: %b ", exp);
+    // $display("Result: %b ", result);
+//end
+endmodule
+
+/////////////////////////////////////
+// Original code for floating point multiplication
+// logic           sign;
+// logic [4:0]     exp;
+// logic [21:0]    multmant;
+// logic [9:0]     shiftmant;
+// logic [15:0]    finalmant;
+
+//assign flags = 4'b0;
 
 // Instantiate the multiply module
 // Create addition module
-
+/*
 always_comb begin : fma16
     // Multiply the mantissas with the implicit 1 as a prefix
     multmant = {1'b1, x[9:0]} * {1'b1, y[9:0]};
@@ -45,13 +63,4 @@ always_comb begin : fma16
     
     // bit swizzle the components together
     result = {sign, exp, shiftmant};
-
-    // For debugging. X2GO is too slow to debug with
-    $display("X: %b", x[14:10]);
-    $display("Y: %b", y[14:10]);
-    $display("Multmant: %b ", multmant);
-    $display("Shiftmant: %b ", shiftmant);
-    $display("exp: %b ", exp);
-    $display("Result: %b ", result);
-end
-endmodule
+*/
