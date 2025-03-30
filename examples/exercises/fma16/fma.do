@@ -9,7 +9,7 @@ onbreak {resume}
 vlib worklib
 
 #vlog -lint -sv -work worklib fma16.sv testbench.sv  - missing fmamult.sv
-vlog -lint -sv -work worklib fma16.sv testbench.sv fmamult.sv
+vlog -lint -sv -work worklib fma16.sv testbench.sv fmamult.sv fmaadd.sv
 vopt +acc worklib.testbench_fma16 -work worklib -o testbenchopt
 vsim -lib worklib testbenchopt
 
@@ -20,5 +20,17 @@ add wave sim:/testbench_fma16/y
 add wave sim:/testbench_fma16/z
 add wave sim:/testbench_fma16/result
 add wave sim:/testbench_fma16/rexpected
+
+add wave sim:/testbench_fma16/dut/addunit/product
+add wave sim:/testbench_fma16/dut/addunit/sum
+add wave sim:/testbench_fma16/dut/addunit/Pe
+add wave sim:/testbench_fma16/dut/addunit/Ze
+add wave sim:/testbench_fma16/dut/addunit/Acnt
+add wave sim:/testbench_fma16/dut/addunit/Am
+add wave sim:/testbench_fma16/dut/addunit/Sm 
+add wave sim:/testbench_fma16/dut/addunit/Pm 
+add wave sim:/testbench_fma16/dut/addunit/Mcnt
+add wave sim:/testbench_fma16/dut/addunit/Mm
+add wave sim:/testbench_fma16/dut/addunit/Me
 
 run -all

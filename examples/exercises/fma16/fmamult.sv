@@ -6,10 +6,10 @@
     Half precision floating point multiplication with positive and negative numbers with exponents that are nonzero and/or zero
 */
 
-module fmamult(input logic   [15:0]      x, y,
-              input logic   [1:0]       roundmode,
-              output logic  [15:0]      product,
-              output logic  [3:0]       flags);
+module fmamult( input logic   [15:0]      x, y,
+                input logic   [1:0]       roundmode,
+                output logic  [15:0]      product,
+                output logic  [3:0]       flags);
 
 logic           sign;
 logic [4:0]     exp;

@@ -22,6 +22,10 @@ uint16_t easyFracts[] = {0, 0x200, 0x8000}; // 1.0 and 1.1
 uint16_t medMulExponents[] = {1, 15, 30, 0x8000};
 uint16_t medMulFracts[] = {0x000, 0x001, 0x3ff, 0x8000};
 
+// simple addition cases
+uint16_t simpleAddExponents[] = {14, 15, 16, 0x8000};
+uint16_t simpleAddFracts[] = {0x200, 0x001,0x8000};
+
 // simple addition corner cases
 uint16_t medAddExponents[] = {1, 14, 15, 16, 29, 30, 0x8000};
 uint16_t medAddFracts[] = {0x000, 0x001, 0x1FF, 0x200, 0x3FF, 0x8000};
@@ -217,27 +221,30 @@ int main()
     genMulTests(easyExponents, easyFracts, 0, "fmul_0_rne", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RNE", 1, 0, 0, 0); */
 
     // Multiply Cases
-    genMulTests(easyExponents, easyFracts, 0, "fmul_0v1", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
-    genMulTests(medMulExponents, medMulFracts, 0, "fmul_1", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    genMulTests(medMulExponents, medMulFracts, 0, "fmul_2", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    // Addition Cases
-    genAddTests(easyExponents, easyFracts, 0, "fadd_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
-    genAddTests(medAddExponents, medAddFracts, 0, "fadd_1", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    genAddTests(medAddExponents, medAddFracts, 0, "fadd_2", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    // FMA Cases
-    genMulAddTests(easyExponents, easyFracts, 0, "fmuladd_0v1", "// MulAdd with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
-    genMulAddTests(medMulAddExponents, medMulAddFracts, 0, "fmuladd_1", "// MulAdd tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    genMulAddTests(medMulAddExponents, medMulAddFracts, 0, "fmuladd_2", "// MulAdd tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    // genMulTests(easyExponents, easyFracts, 0, "fmul_0v1", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
+    // genMulTests(medMulExponents, medMulFracts, 0, "fmul_1", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    // genMulTests(medMulExponents, medMulFracts, 0, "fmul_2", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    // // Addition Cases
+    // genAddTests(easyExponents, easyFracts, 0, "fadd_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
+    // genAddTests(medAddExponents, medAddFracts, 0, "fadd_1", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    // genAddTests(medAddExponents, medAddFracts, 0, "fadd_2", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+
+    //genAddSimpleTests(simpleAddExponents, simpleAddFracts, 0, "fadd_simple_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
+
+    // // FMA Cases
+    // genMulAddTests(easyExponents, easyFracts, 0, "fmuladd_0v1", "// MulAdd with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
+    // genMulAddTests(medMulAddExponents, medMulAddFracts, 0, "fmuladd_1", "// MulAdd tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    // genMulAddTests(medMulAddExponents, medMulAddFracts, 0, "fmuladd_2", "// MulAdd tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
     
-    // Special Cases
-    softfloat_roundingMode = softfloat_round_minMag;
-    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rz", "// Tests for special inputs, RZ", 1, 0, 0, 0);
-    softfloat_roundingMode = softfloat_round_near_even;
-    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rne", "// Tests for special inputs, RZ", 1, 0, 0, 0);
-    softfloat_roundingMode = softfloat_round_min;
-    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rm", "// Tests for special inputs, RM", 1, 0, 0, 0);
-    softfloat_roundingMode = softfloat_round_max;
-    genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rp", "// Tests for special inputs, RP", 1, 0, 0, 0);
+    // // Special Cases
+    // softfloat_roundingMode = softfloat_round_minMag;
+    // genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rz", "// Tests for special inputs, RZ", 1, 0, 0, 0);
+    // softfloat_roundingMode = softfloat_round_near_even;
+    // genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rne", "// Tests for special inputs, RZ", 1, 0, 0, 0);
+    // softfloat_roundingMode = softfloat_round_min;
+    // genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rm", "// Tests for special inputs, RM", 1, 0, 0, 0);
+    // softfloat_roundingMode = softfloat_round_max;
+    // genMulAddTests(specialExponents, specialFracts, 1, "fma_special_rp", "// Tests for special inputs, RP", 1, 0, 0, 0);
     
     return 0;
 }

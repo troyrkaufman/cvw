@@ -13,13 +13,18 @@ module fma16(input logic  [15:0]    x, y, z,
              output logic [15:0]    result, 
              output logic [3:0]     flags);
 
-    logic [15:0] product;
+    logic [15:0] product;       // output from floating point mult module
+    logic [15:0] sum;
 
+    // floating point multiplication
     fmamult multunit(.x(x), .y(y), .roundmode(roundmode), .product(product), .flags(flags));
 
-    assign result = product;
+    // floating point addition
+    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .sum(sum));
+
+    assign result = sum;
     
-    // For debugging. X2GO is too slow to debug with
+    // //For debugging. X2GO is too slow to debug with
     // $display("X: %b", x[14:10]);
     // $display("Y: %b", y[14:10]);
     // $display("Multmant: %b ", multmant);
@@ -28,6 +33,24 @@ module fma16(input logic  [15:0]    x, y, z,
     // $display("Result: %b ", result);
 //end
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /////////////////////////////////////
 // Original code for floating point multiplication
