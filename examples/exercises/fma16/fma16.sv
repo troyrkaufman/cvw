@@ -20,7 +20,7 @@ module fma16(input logic  [15:0]    x, y, z,
     fmamult multunit(.x(x), .y(y), .roundmode(roundmode), .product(product), .flags(flags));
 
     // floating point addition
-    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .sum(sum));
+    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .negz(negz), .sum(sum));
 
     assign result = sum;
     

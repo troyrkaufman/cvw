@@ -25,12 +25,19 @@ add wave sim:/testbench_fma16/dut/addunit/product
 add wave sim:/testbench_fma16/dut/addunit/sum
 add wave sim:/testbench_fma16/dut/addunit/Pe
 add wave sim:/testbench_fma16/dut/addunit/Ze
+add wave sim:/testbench_fma16/dut/addunit/Pm
+add wave sim:/testbench_fma16/dut/addunit/Zm
 add wave sim:/testbench_fma16/dut/addunit/Acnt
+add wave sim:/testbench_fma16/dut/addunit/ZmPreShift
+add wave sim:/testbench_fma16/dut/addunit/ZmShift
+add wave sim:/testbench_fma16/dut/addunit/tempZmShift
 add wave sim:/testbench_fma16/dut/addunit/Am
 add wave sim:/testbench_fma16/dut/addunit/Sm 
-add wave sim:/testbench_fma16/dut/addunit/Pm 
-add wave sim:/testbench_fma16/dut/addunit/Mcnt
+add wave sim:/testbench_fma16/dut/addunit/preSum 
+add wave sim:/testbench_fma16/dut/addunit/i
+add wave sim:/testbench_fma16/dut/addunit/ZeroCnt
 add wave sim:/testbench_fma16/dut/addunit/Mm
 add wave sim:/testbench_fma16/dut/addunit/Me
 
-run -all
+run 2245 ns
+#run -all
