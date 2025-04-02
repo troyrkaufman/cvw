@@ -24,13 +24,15 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     logic [33:0]    preSum;
 
     logic [4:0]     Mcnt;    // num count for leading 1 normalization shift
+    logic [33:0]    tempMm;
+    logic [33:0]    tempMe;
     logic [9:0]     Mm;  
     logic [4:0]     Me;
 
-    logic [37-1:0]            num;    // number to count the leading zeroes of
-    logic [$clog2(37+1)-1:0]  ZeroCnt; // the number of leading zeroes
+    // logic [37-1:0]            num;    // number to count the leading zeroes of
+    // logic [$clog2(37+1)-1:0]  ZeroCnt; // the number of leading zeroes
 
-    //logic           left;   // bit decides whether to shift to the left or right
+    logic           left;   // bit decides whether to shift to the left or right
 
     // add the exponents of x and y
     assign Pe = x[14:10] + y[14:10] - 4'd15;
@@ -71,35 +73,70 @@ module fmaadd(  input logic [15:0] product, x, y, z,
             Sm = ~{23'b0, Pm} + ~Am;
     end
 
-  integer i;
+//  integer i;
   
-  always_comb begin
-    i = 0;
-    while ((i < 34) & ~num[34-1-i]) i = i+1;  // search for leading one
-    ZeroCnt = i[$clog2(34+1)-1:0];
-  end
+//   always_comb begin
+//     i = 0;
+//     while ((i < 34) & ~num[34-1-i]) i = i+1;  // search for leading one
+//     ZeroCnt = i[$clog2(34+1)-1:0];
+//   end
 
-    assign preSum = Sm >> ZeroCnt;
-    assign Mm = preSum[9:0];
-    assign Me = Pe - ZeroCnt[4:0];
+    // find the leading 1 for normalization shift
+    always_comb begin : priorityEncoder
+        if (Sm[33])         begin   Mcnt = 'd22;    left = 1;        end 
+        else if (Sm[32])    begin   Mcnt = 'd21;    left = 1;        end
+        else if (Sm[31])    begin   Mcnt = 'd20;    left = 1;        end
+        else if (Sm[30])    begin   Mcnt = 'd19;    left = 1;        end
+        else if (Sm[29])    begin   Mcnt = 'd18;    left = 1;        end
+        else if (Sm[28])    begin   Mcnt = 'd17;    left = 1;        end
+        else if (Sm[27])    begin   Mcnt = 'd16;    left = 1;        end
+        else if (Sm[26])    begin   Mcnt = 'd15;    left = 1;        end
+        else if (Sm[25])    begin   Mcnt = 'd14;    left = 1;        end
+        else if (Sm[24])    begin   Mcnt = 'd14;    left = 1;        end
+        else if (Sm[23])    begin   Mcnt = 'd13;    left = 1;        end
+        else if (Sm[22])    begin   Mcnt = 'd12;    left = 1;        end
+        else if (Sm[21])    begin   Mcnt = 'd11;    left = 1;        end
+        else if (Sm[20])    begin   Mcnt = 'd10;    left = 1;        end
+        else if (Sm[19])    begin   Mcnt = 9;       left = 1;        end
+        else if (Sm[18])    begin   Mcnt = 8;       left = 1;        end
+        else if (Sm[17])    begin   Mcnt = 7;       left = 1;        end
+        else if (Sm[16])    begin   Mcnt = 6;       left = 1;        end
+        else if (Sm[15])    begin   Mcnt = 5;       left = 1;        end
+        else if (Sm[14])    begin   Mcnt = 4;       left = 1;        end
+        else if (Sm[13])    begin   Mcnt = 3;       left = 1;        end
+        else if (Sm[12])    begin   Mcnt = 2;       left = 1;        end
+        else if (Sm[11])    begin   Mcnt = 1;       left = 1;        end
+        else if (Sm[10])    begin   Mcnt = 0;       left = 0;        end
+        else if (Sm[9])     begin   Mcnt = 1;       left = 0;        end
+        else if (Sm[8])     begin   Mcnt = 2;       left = 0;        end
+        else if (Sm[7])     begin   Mcnt = 3;       left = 0;        end
+        else if (Sm[6])     begin   Mcnt = 4;       left = 0;        end
+        else if (Sm[5])     begin   Mcnt = 5;       left = 0;        end
+        else if (Sm[4])     begin   Mcnt = 6;       left = 0;        end
+        else if (Sm[3])     begin   Mcnt = 7;       left = 0;        end
+        else if (Sm[2])     begin   Mcnt = 8;       left = 0;        end
+        else if (Sm[1])     begin   Mcnt = 9;       left = 0;        end
+        else                begin   Mcnt = 10;      left = 0;        end
+    end
 
+    // shift to renormalize
+    always_comb begin
+        if (left) begin 
+            tempMm = Sm >> Mcnt;
+            Mm = tempMm[9:0];
+            Me = Pe + Mcnt;
+        end 
+        else begin
+            tempMm = Sm << Mcnt;
+            //Mm = Sm << Mcnt;
+            Mm = tempMm[9:0];
+            Me = Pe - Mcnt;
+        end 
+    end
 
-    // // determine the alighment shift count
-    // assign Acnt = $signed(Pe) - $signed(Ze);
-
-    // // shift the significand of z into alignment
-    // always_comb begin
-    //     if ($signed(Acnt) < 0) Am = {1'b1,z[9:0]} << $unsigned(Acnt);
-    //     else Am = {1'b1,z[9:0]} >> $unsigned(Acnt);
-    // end
-    // //assign Am = {1'b1,z[9:0]} >> Acnt;
-
-    // // add the aligned significands
-    // // assign Sm = {11'b0,Pm} + {{(22-$unsigned(Acnt)){1'b0}},Am};
-    // assign Sm = {11'b0,Pm} + {};
-
-
-
+    // assign preSum = Sm >> ZeroCnt;
+    // assign Mm = preSum[9:0];
+    // assign Me = Pe - ZeroCnt[4:0];
 
     // bit swizzle results together
     assign sum = {1'b0,Me,Mm[9:0]};
@@ -137,3 +174,17 @@ endmodule
 
     // //assign Mm = Sm >> Mcnt;
     // //assign Me = Pe + Mcnt;
+
+        // // determine the alighment shift count
+    // assign Acnt = $signed(Pe) - $signed(Ze);
+
+    // // shift the significand of z into alignment
+    // always_comb begin
+    //     if ($signed(Acnt) < 0) Am = {1'b1,z[9:0]} << $unsigned(Acnt);
+    //     else Am = {1'b1,z[9:0]} >> $unsigned(Acnt);
+    // end
+    // //assign Am = {1'b1,z[9:0]} >> Acnt;
+
+    // // add the aligned significands
+    // // assign Sm = {11'b0,Pm} + {{(22-$unsigned(Acnt)){1'b0}},Am};
+    // assign Sm = {11'b0,Pm} + {};

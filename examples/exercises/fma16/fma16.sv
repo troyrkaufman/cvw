@@ -24,14 +24,6 @@ module fma16(input logic  [15:0]    x, y, z,
 
     assign result = sum;
     
-    // //For debugging. X2GO is too slow to debug with
-    // $display("X: %b", x[14:10]);
-    // $display("Y: %b", y[14:10]);
-    // $display("Multmant: %b ", multmant);
-    // $display("Shiftmant: %b ", shiftmant);
-    // $display("exp: %b ", exp);
-    // $display("Result: %b ", result);
-//end
 endmodule
 
 
@@ -49,7 +41,14 @@ endmodule
 
 
 
-
+ // //For debugging. X2GO is too slow to debug with
+    // $display("X: %b", x[14:10]);
+    // $display("Y: %b", y[14:10]);
+    // $display("Multmant: %b ", multmant);
+    // $display("Shiftmant: %b ", shiftmant);
+    // $display("exp: %b ", exp);
+    // $display("Result: %b ", result);
+//end
 
 
 /////////////////////////////////////
