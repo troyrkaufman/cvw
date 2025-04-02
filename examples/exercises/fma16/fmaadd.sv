@@ -45,9 +45,27 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     // Then preshift Z's mantissa all the way to the left then back to the right by Acnt.
     always_comb begin : alignmentShift
         Acnt = Pe - Ze + 4'd12;
-        if ($signed($unsigned(Pe) - $unsigned(Ze)) >= 11)        nsig = 2'b01;
-        else if ($signed($unsigned(Ze) - $unsigned(Pe)) >= 11)   nsig = 2'b10;
-        else                                             nsig = 2'b00;
+        // if ($signed($unsigned(Pe) - $unsigned(Ze)) >= 11)        nsig = 2'b01;
+        // else if ($signed($unsigned(Ze) - $unsigned(Pe)) >= 11)   nsig = 2'b10;
+        // else                                                     nsig = 2'b00;
+
+        if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) >= 11)) 
+        nsig = 2'b01;  // Product dominates, return product
+        else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) >= 11)) 
+        nsig = 2'b10;  // Addend dominates, return addend
+        else
+        nsig = 2'b00;  // Perform normal floating-point addition
+
+        
+        // if ($unsigned(Ze) > $unsigned(Pe))
+        //     if ((~$signed($unsigned(Pe) - $unsigned(Ze)) + 1'b1) >= 11)         nsig = 2'b10;
+        //     else if ($signed($unsigned(Ze) - $unsigned(Pe)) >= 11)              nsig = 2'b01;
+        //     else                                                                nsig = 2'b00;
+        // else if ($unsigned(Pe) > $unsigned(Ze))
+        //     if ((~($signed($unsigned(Ze) - $unsigned(Pe))) + 1'b1) >= 11)       nsig = 2'b01;
+        //     else if (~($signed($unsigned(Pe) - $unsigned(Ze)) +1'b1) >= 11)             nsig = 2'b10;
+        //     else                                                                nsig = 2'b00;
+        // else                                                                    nsig = 2'b00;
         ZmPreShift = {12'b0, Zm} << 'd12; //23 bits
         ZmShift = {21'b0, ZmPreShift} >> {38'b0, Acnt};
         Am = ZmShift[33:0];
