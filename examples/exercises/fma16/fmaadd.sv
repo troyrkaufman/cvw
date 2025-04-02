@@ -29,10 +29,9 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     logic [9:0]     Mm;  
     logic [4:0]     Me;
 
-    // logic [37-1:0]            num;    // number to count the leading zeroes of
-    // logic [$clog2(37+1)-1:0]  ZeroCnt; // the number of leading zeroes
-
     logic           left;   // bit decides whether to shift to the left or right
+    logic [1:0]     nsig;   // one of the addends or insignificant
+    logic           sign;
 
     // add the exponents of x and y
     assign Pe = x[14:10] + y[14:10] - 4'd15;
@@ -42,97 +41,113 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     assign Pm = {1'b1,product[9:0]};
     assign Zm = {1'b1, z[9:0]};
 
-    // Z mantissa alignment shift alogrithm
+    // Z mantissa alignment shift alogrithm. First align the shift amount and check for insignificant addends.
+    // Then preshift Z's mantissa all the way to the left then back to the right by Acnt.
     always_comb begin : alignmentShift
-    // allignment shift amount
         Acnt = Pe - Ze + 4'd12;
-
-    // Preshift Z manitssa
+        if ($signed($unsigned(Pe) - $unsigned(Ze)) >= 11)        nsig = 2'b01;
+        else if ($signed($unsigned(Ze) - $unsigned(Pe)) >= 11)   nsig = 2'b10;
+        else                                             nsig = 2'b00;
         ZmPreShift = {12'b0, Zm} << 'd12; //23 bits
-
-    // Variable alignment
         ZmShift = {21'b0, ZmPreShift} >> {38'b0, Acnt};
-
-    // shift Zm by Nf
-     //   tempZmShift = ZmShift >> 4'd10;
-
-    // retrieve only the necessary bits
-       // Am = tempZmShift[33:0];
-       Am = ZmShift[33:0];
+        Am = ZmShift[33:0];
     end
 
-    // add or subtract mantissas
+    // compute mantissa's magnitude
     always_comb begin : computeMantissas
-        if ((product[15] ^ z[15]) == 1'b1 && z[15] == 1'b1) 
-            Sm = {23'b0, Pm} + ~Am;
-        else if ((product[15] ^ z[15]) == 1'b1 && z[15] == 1'b0) 
-            Sm = ~{23'b0, Pm} + Am; 
-        else if ((product[15] ^ z[15]) == 1'b0 && z[15] == 1'b0) 
-            Sm = {23'b0, Pm} + Am; 
-        else 
-            Sm = ~{23'b0, Pm} + ~Am;
+        if ((product[15] ^ z[15]) == 1'b1 && z[15] == 1'b1)         
+            begin Sm = {23'b0, Pm} + ~Am; end 
+        else if ((product[15] ^ z[15]) == 1'b1 && z[15] == 1'b0)    
+            begin Sm = ~{23'b0, Pm} + Am; end 
+        else if ((product[15] ^ z[15]) == 1'b0 && z[15] == 1'b0)    
+            begin Sm = {23'b0, Pm} + Am;  end
+        else                                                        
+            begin Sm = ~{23'b0, Pm} + ~Am;end
     end
-
-//  integer i;
-  
-//   always_comb begin
-//     i = 0;
-//     while ((i < 34) & ~num[34-1-i]) i = i+1;  // search for leading one
-//     ZeroCnt = i[$clog2(34+1)-1:0];
-//   end
 
     // find the leading 1 for normalization shift
     always_comb begin : priorityEncoder
-        if (Sm[33])         begin   Mcnt = 'd22;    left = 1;        end 
-        else if (Sm[32])    begin   Mcnt = 'd21;    left = 1;        end
-        else if (Sm[31])    begin   Mcnt = 'd20;    left = 1;        end
-        else if (Sm[30])    begin   Mcnt = 'd19;    left = 1;        end
-        else if (Sm[29])    begin   Mcnt = 'd18;    left = 1;        end
-        else if (Sm[28])    begin   Mcnt = 'd17;    left = 1;        end
-        else if (Sm[27])    begin   Mcnt = 'd16;    left = 1;        end
-        else if (Sm[26])    begin   Mcnt = 'd15;    left = 1;        end
-        else if (Sm[25])    begin   Mcnt = 'd14;    left = 1;        end
-        else if (Sm[24])    begin   Mcnt = 'd14;    left = 1;        end
-        else if (Sm[23])    begin   Mcnt = 'd13;    left = 1;        end
-        else if (Sm[22])    begin   Mcnt = 'd12;    left = 1;        end
-        else if (Sm[21])    begin   Mcnt = 'd11;    left = 1;        end
-        else if (Sm[20])    begin   Mcnt = 'd10;    left = 1;        end
-        else if (Sm[19])    begin   Mcnt = 9;       left = 1;        end
-        else if (Sm[18])    begin   Mcnt = 8;       left = 1;        end
-        else if (Sm[17])    begin   Mcnt = 7;       left = 1;        end
-        else if (Sm[16])    begin   Mcnt = 6;       left = 1;        end
-        else if (Sm[15])    begin   Mcnt = 5;       left = 1;        end
-        else if (Sm[14])    begin   Mcnt = 4;       left = 1;        end
-        else if (Sm[13])    begin   Mcnt = 3;       left = 1;        end
-        else if (Sm[12])    begin   Mcnt = 2;       left = 1;        end
-        else if (Sm[11])    begin   Mcnt = 1;       left = 1;        end
-        else if (Sm[10])    begin   Mcnt = 0;       left = 0;        end
-        else if (Sm[9])     begin   Mcnt = 1;       left = 0;        end
-        else if (Sm[8])     begin   Mcnt = 2;       left = 0;        end
-        else if (Sm[7])     begin   Mcnt = 3;       left = 0;        end
-        else if (Sm[6])     begin   Mcnt = 4;       left = 0;        end
-        else if (Sm[5])     begin   Mcnt = 5;       left = 0;        end
-        else if (Sm[4])     begin   Mcnt = 6;       left = 0;        end
-        else if (Sm[3])     begin   Mcnt = 7;       left = 0;        end
-        else if (Sm[2])     begin   Mcnt = 8;       left = 0;        end
-        else if (Sm[1])     begin   Mcnt = 9;       left = 0;        end
-        else                begin   Mcnt = 10;      left = 0;        end
+        if (Sm[33])         begin   Mcnt = 'd22;    left = 1;   end 
+        else if (Sm[32])    begin   Mcnt = 'd21;    left = 1;   end
+        else if (Sm[31])    begin   Mcnt = 'd20;    left = 1;   end
+        else if (Sm[30])    begin   Mcnt = 'd19;    left = 1;   end
+        else if (Sm[29])    begin   Mcnt = 'd18;    left = 1;   end
+        else if (Sm[28])    begin   Mcnt = 'd17;    left = 1;   end
+        else if (Sm[27])    begin   Mcnt = 'd16;    left = 1;   end
+        else if (Sm[26])    begin   Mcnt = 'd15;    left = 1;   end
+        else if (Sm[25])    begin   Mcnt = 'd14;    left = 1;   end
+        else if (Sm[24])    begin   Mcnt = 'd14;    left = 1;   end
+        else if (Sm[23])    begin   Mcnt = 'd13;    left = 1;   end
+        else if (Sm[22])    begin   Mcnt = 'd12;    left = 1;   end
+        else if (Sm[21])    begin   Mcnt = 'd11;    left = 1;   end
+        else if (Sm[20])    begin   Mcnt = 'd10;    left = 1;   end
+        else if (Sm[19])    begin   Mcnt = 9;       left = 1;   end
+        else if (Sm[18])    begin   Mcnt = 8;       left = 1;   end
+        else if (Sm[17])    begin   Mcnt = 7;       left = 1;   end
+        else if (Sm[16])    begin   Mcnt = 6;       left = 1;   end
+        else if (Sm[15])    begin   Mcnt = 5;       left = 1;   end
+        else if (Sm[14])    begin   Mcnt = 4;       left = 1;   end
+        else if (Sm[13])    begin   Mcnt = 3;       left = 1;   end
+        else if (Sm[12])    begin   Mcnt = 2;       left = 1;   end
+        else if (Sm[11])    begin   Mcnt = 1;       left = 1;   end
+        else if (Sm[10])    begin   Mcnt = 0;       left = 0;   end
+        else if (Sm[9])     begin   Mcnt = 1;       left = 0;   end
+        else if (Sm[8])     begin   Mcnt = 2;       left = 0;   end
+        else if (Sm[7])     begin   Mcnt = 3;       left = 0;   end
+        else if (Sm[6])     begin   Mcnt = 4;       left = 0;   end
+        else if (Sm[5])     begin   Mcnt = 5;       left = 0;   end
+        else if (Sm[4])     begin   Mcnt = 6;       left = 0;   end
+        else if (Sm[3])     begin   Mcnt = 7;       left = 0;   end
+        else if (Sm[2])     begin   Mcnt = 8;       left = 0;   end
+        else if (Sm[1])     begin   Mcnt = 9;       left = 0;   end
+        else                begin   Mcnt = 10;      left = 0;   end
     end
 
     // shift to renormalize
     always_comb begin
-        if (left) begin 
-            tempMm = Sm >> Mcnt;
-            Mm = tempMm[9:0];
-            Me = Pe + Mcnt;
-        end 
+        if (nsig == 2'b01) begin 
+            Mm = product[9:0];
+            Me = product[14:10];
+            // sign = product[15];
+            tempMm = '0;
+        end
+        else if (nsig == 2'b10) begin
+            Mm = z[9:0];
+            Me = z[14:10];
+            // sign = z[15];
+            tempMm = '0;
+        end
         else begin
-            tempMm = Sm << Mcnt;
-            //Mm = Sm << Mcnt;
-            Mm = tempMm[9:0];
-            Me = Pe - Mcnt;
-        end 
+            if (left) begin 
+                tempMm = Sm >> Mcnt;
+                Mm = tempMm[9:0];
+                Me = Pe + Mcnt;
+            end 
+            else begin
+                tempMm = Sm << Mcnt;
+                //Mm = Sm << Mcnt;
+                Mm = tempMm[9:0];
+                Me = Pe - Mcnt;
+            end 
+        end
     end
+
+    // // shift to renormalize
+    // always_comb begin
+    //     if (left) begin 
+    //         tempMm = Sm >> Mcnt;
+    //         Mm = tempMm[9:0];
+    //         Me = Pe + Mcnt;
+    //     end 
+    //     else begin
+    //         tempMm = Sm << Mcnt;
+    //         //Mm = Sm << Mcnt;
+    //         Mm = tempMm[9:0];
+    //         Me = Pe - Mcnt;
+    //     end 
+    // end
+
+
 
     // assign preSum = Sm >> ZeroCnt;
     // assign Mm = preSum[9:0];

@@ -28,6 +28,7 @@ add wave sim:/testbench_fma16/dut/addunit/Ze
 add wave sim:/testbench_fma16/dut/addunit/Pm
 add wave sim:/testbench_fma16/dut/addunit/Zm
 add wave sim:/testbench_fma16/dut/addunit/Acnt
+add wave sim:/testbench_fma16/dut/addunit/nsig
 add wave sim:/testbench_fma16/dut/addunit/ZmPreShift
 add wave sim:/testbench_fma16/dut/addunit/ZmShift
 add wave sim:/testbench_fma16/dut/addunit/tempZmShift
@@ -41,5 +42,5 @@ add wave sim:/testbench_fma16/dut/addunit/tempMm
 add wave sim:/testbench_fma16/dut/addunit/Mm
 add wave sim:/testbench_fma16/dut/addunit/Me
 
-run 300 ns
-#run -all
+#run 300 ns
+run -all
