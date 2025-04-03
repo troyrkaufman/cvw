@@ -36,8 +36,6 @@ add wave sim:/testbench_fma16/dut/addunit/ZmPreShift
 add wave sim:/testbench_fma16/dut/addunit/ZmShift
 add wave sim:/testbench_fma16/dut/addunit/Am
 add wave sim:/testbench_fma16/dut/addunit/addType
-add wave sim:/testbench_fma16/dut/addunit/debugPm
-add wave sim:/testbench_fma16/dut/addunit/debugAm 
 add wave sim:/testbench_fma16/dut/addunit/Sm 
 add wave sim:/testbench_fma16/dut/addunit/Mcnt
 add wave sim:/testbench_fma16/dut/addunit/left
