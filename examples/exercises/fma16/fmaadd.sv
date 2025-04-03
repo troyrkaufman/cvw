@@ -12,7 +12,11 @@ module fmaadd(  input logic [15:0] product, x, y, z,
 
     logic [4:0]     Pe;     // sum of the product's exponents
     logic [4:0]     Ze;     // z's exponent
-    logic [4:0]     Acnt;    // alignment shift count
+    //logic [4:0]     Acnt;    // alignment shift count
+    logic [6:0]     Acnt;    // alignment shift count
+
+    logic           Zs;     // Z's sign bit
+    logic           Ps;     // product's sign
 
     logic [10:0]    Zm;
     logic [10:0]    Pm;
@@ -33,54 +37,75 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     logic [1:0]     nsig;   // one of the addends or insignificant
     logic           sign;
 
+    logic [15:0]    tempZ;
+
+    logic [1:0]     addType;    // type of addition being performed
+
+    logic [33:0]    debugPm;
+    logic [33:0]    debugAm;
+
+    assign debugPm = {23'b0, Pm}; 
+    assign debugAm = ~Am + 1'b1;
+
+    assign tempZ = negz ? (~z + 1'b1) : z;
+
     // add the exponents of x and y
     assign Pe = x[14:10] + y[14:10] - 4'd15;
-    assign Ze = z[14:10];
+    assign Ze = tempZ[14:10];
 
     // product's mantissa
     assign Pm = {1'b1,product[9:0]};
-    assign Zm = {1'b1, z[9:0]};
+    assign Zm = {1'b1, tempZ[9:0]};
 
-    // Z mantissa alignment shift alogrithm. First align the shift amount and check for insignificant addends.
+    // addend's sign
+    assign Zs = tempZ[15];
+    assign Ps = product[15];
+
+    // Z mantissa alignment shift alogrithm. First align the shift amount.
     // Then preshift Z's mantissa all the way to the left then back to the right by Acnt.
     always_comb begin : alignmentShift
-        Acnt = Pe - Ze + 4'd12;
-        // if ($signed($unsigned(Pe) - $unsigned(Ze)) >= 11)        nsig = 2'b01;
-        // else if ($signed($unsigned(Ze) - $unsigned(Pe)) >= 11)   nsig = 2'b10;
-        // else                                                     nsig = 2'b00;
-
-        if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) >= 11)) 
-        nsig = 2'b01;  // Product dominates, return product
-        else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) >= 11)) 
-        nsig = 2'b10;  // Addend dominates, return addend
-        else
-        nsig = 2'b00;  // Perform normal floating-point addition
-
-        
-        // if ($unsigned(Ze) > $unsigned(Pe))
-        //     if ((~$signed($unsigned(Pe) - $unsigned(Ze)) + 1'b1) >= 11)         nsig = 2'b10;
-        //     else if ($signed($unsigned(Ze) - $unsigned(Pe)) >= 11)              nsig = 2'b01;
-        //     else                                                                nsig = 2'b00;
-        // else if ($unsigned(Pe) > $unsigned(Ze))
-        //     if ((~($signed($unsigned(Ze) - $unsigned(Pe))) + 1'b1) >= 11)       nsig = 2'b01;
-        //     else if (~($signed($unsigned(Pe) - $unsigned(Ze)) +1'b1) >= 11)             nsig = 2'b10;
-        //     else                                                                nsig = 2'b00;
-        // else                                                                    nsig = 2'b00;
+        // Acnt = Pe - Ze + 4'd12;
+        // ZmPreShift = {12'b0, Zm} << 'd12; //23 bits
+        // ZmShift = {21'b0, ZmPreShift} >> {38'b0, Acnt};
+        // Am = ZmShift[33:0];
+        Acnt = {2'b0, Pe} - {2'b0, Ze} + 'd12;
         ZmPreShift = {12'b0, Zm} << 'd12; //23 bits
-        ZmShift = {21'b0, ZmPreShift} >> {38'b0, Acnt};
+        ZmShift = {21'b0, ZmPreShift} >> Acnt;
         Am = ZmShift[33:0];
     end
 
+    // Check for unecessary addition then assign the nsig flag a specific value to either telling the program that either
+    // the product dominates (transmit product), addend dominates (transmit addend), or neither dominates and perform normal floating point addition
+    always_comb begin : checkSignificance
+        if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) >= 11))         nsig = 2'b01;  
+        else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) >= 11))    nsig = 2'b10; 
+        else                                                                                    nsig = 2'b00;
+    end
+
     // compute mantissa's magnitude
+    // addType = 2'b00: unsigned addition
+    // addType = 2'b01: unsigned product and signed addend
+    // addType = 2'b10: signed product and unsigned addend
+    // addType = 2'b11: signed product and signed addend
     always_comb begin : computeMantissas
-        if ((product[15] ^ z[15]) == 1'b1 && z[15] == 1'b1)         
-            begin Sm = {23'b0, Pm} + ~Am; end 
-        else if ((product[15] ^ z[15]) == 1'b1 && z[15] == 1'b0)    
-            begin Sm = ~{23'b0, Pm} + Am; end 
-        else if ((product[15] ^ z[15]) == 1'b0 && z[15] == 1'b0)    
-            begin Sm = {23'b0, Pm} + Am;  end
+        if ((Ps ^ Zs) == 1'b1 && Zs == 1'b1)         
+            begin Sm = {23'b0, Pm} + (~Am + 1'b1); addType = 2'b01; end 
+        else if ((Ps ^ Zs) == 1'b1 && Zs == 1'b0)    
+            begin Sm = (~{23'b0, Pm} + 1'b1) + Am; addType = 2'b10; end 
+        else if ((Ps ^ Zs) == 1'b0 && Zs == 1'b0)    
+            begin Sm = {23'b0, Pm} + Am;  addType = 2'b00; end
         else                                                        
-            begin Sm = ~{23'b0, Pm} + ~Am;end
+            begin Sm = (~{23'b0, Pm}+1'b1) + (~Am + 1'b1);addType = 2'b11; end
+    end
+
+    // compute sign...need to introduce negz logic here too which will add a little bit more work
+    always_comb begin : computeSign
+        if (addType == 2'b00) sign = '0;
+        else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b01) sign = '0;
+        else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b10) sign = '1;
+        else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b01) sign = '1;
+        else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b10) sign = '0;
+        else sign = '0; //(addType == 2'b11) sign = '0; 
     end
 
     // find the leading 1 for normalization shift
@@ -118,7 +143,7 @@ module fmaadd(  input logic [15:0] product, x, y, z,
         else if (Sm[3])     begin   Mcnt = 7;       left = 0;   end
         else if (Sm[2])     begin   Mcnt = 8;       left = 0;   end
         else if (Sm[1])     begin   Mcnt = 9;       left = 0;   end
-        else                begin   Mcnt = 10;      left = 0;   end
+        else                begin   Mcnt = 'd10;    left = 0;   end
     end
 
     // shift to renormalize
@@ -126,13 +151,11 @@ module fmaadd(  input logic [15:0] product, x, y, z,
         if (nsig == 2'b01) begin 
             Mm = product[9:0];
             Me = product[14:10];
-            // sign = product[15];
             tempMm = '0;
         end
         else if (nsig == 2'b10) begin
             Mm = z[9:0];
             Me = z[14:10];
-            // sign = z[15];
             tempMm = '0;
         end
         else begin
@@ -143,81 +166,13 @@ module fmaadd(  input logic [15:0] product, x, y, z,
             end 
             else begin
                 tempMm = Sm << Mcnt;
-                //Mm = Sm << Mcnt;
                 Mm = tempMm[9:0];
                 Me = Pe - Mcnt;
             end 
         end
     end
 
-    // // shift to renormalize
-    // always_comb begin
-    //     if (left) begin 
-    //         tempMm = Sm >> Mcnt;
-    //         Mm = tempMm[9:0];
-    //         Me = Pe + Mcnt;
-    //     end 
-    //     else begin
-    //         tempMm = Sm << Mcnt;
-    //         //Mm = Sm << Mcnt;
-    //         Mm = tempMm[9:0];
-    //         Me = Pe - Mcnt;
-    //     end 
-    // end
-
-
-
-    // assign preSum = Sm >> ZeroCnt;
-    // assign Mm = preSum[9:0];
-    // assign Me = Pe - ZeroCnt[4:0];
-
     // bit swizzle results together
-    assign sum = {1'b0,Me,Mm[9:0]};
-
+    assign sum = {sign,Me,Mm[9:0]};
 endmodule
 
-
-    // // find the leading 1 for normalization shift
-    // always_comb begin : priorityEncoder
-    //     if (Sm[12])      begin   Mcnt = 2;  left = 1;        end 
-    //     else if (Sm[11]) begin   Mcnt = 1;  left = 1;        end
-    //     else if (Sm[10]) begin   Mcnt = 0;  left = 1;        end
-    //     else if (Sm[9])  begin   Mcnt = 1;  left = 1;        end
-    //     else if (Sm[8])  begin   Mcnt = 2;  left = 0;        end
-    //     else if (Sm[7])  begin   Mcnt = 3;  left = 0;        end
-    //     else if (Sm[6])  begin   Mcnt = 4;  left = 0;        end
-    //     else if (Sm[5])  begin   Mcnt = 5;  left = 0;        end
-    //     else if (Sm[4])  begin   Mcnt = 7;  left = 0;        end
-    //     else if (Sm[1])  begin   Mcnt = 8;  left = 0;        end
-    //     else if (Sm[0])  begin   Mcnt = 9;  left = 0;        end
-    //     else             begin   Mcnt = 5;  left = 1;        end
-    // end
-
-    // // shift to renormalize
-    // always_comb begin
-    //     if (left) begin 
-    //         Mm = Sm >> Mcnt;
-    //         Me = Pe + Mcnt;
-    //     end 
-    //     else begin
-    //         Mm = Sm << Mcnt;
-    //         Me = Pe - Mcnt;
-    //     end 
-    // end
-
-    // //assign Mm = Sm >> Mcnt;
-    // //assign Me = Pe + Mcnt;
-
-        // // determine the alighment shift count
-    // assign Acnt = $signed(Pe) - $signed(Ze);
-
-    // // shift the significand of z into alignment
-    // always_comb begin
-    //     if ($signed(Acnt) < 0) Am = {1'b1,z[9:0]} << $unsigned(Acnt);
-    //     else Am = {1'b1,z[9:0]} >> $unsigned(Acnt);
-    // end
-    // //assign Am = {1'b1,z[9:0]} >> Acnt;
-
-    // // add the aligned significands
-    // // assign Sm = {11'b0,Pm} + {{(22-$unsigned(Acnt)){1'b0}},Am};
-    // assign Sm = {11'b0,Pm} + {};

@@ -223,11 +223,12 @@ int main()
     // Multiply Cases
     // genMulTests(easyExponents, easyFracts, 0, "fmul_0v1", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genMulTests(medMulExponents, medMulFracts, 0, "fmul_1", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    // genMulTests(medMulExponents, medMulFracts, 0, "fmul_2", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+     genMulTests(medMulExponents, medMulFracts, 1, "fmul_2", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+
     // // Addition Cases
     // genAddTests(easyExponents, easyFracts, 0, "fadd_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genAddTests(medAddExponents, medAddFracts, 0, "fadd_1", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    // genAddTests(medAddExponents, medAddFracts, 0, "fadd_2", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    genAddTests(medAddExponents, medAddFracts, 1, "fadd_2", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
 
     //genAddSimpleTests(simpleAddExponents, simpleAddFracts, 0, "fadd_simple_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
 
