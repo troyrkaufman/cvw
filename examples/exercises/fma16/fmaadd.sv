@@ -29,6 +29,7 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     logic [33:0]    preSum;
 
     logic [4:0]     Mcnt;    // num count for leading 1 normalization shift
+    logic [4:0]     normalMcnt;
     logic [33:0]    tempMm;
     logic [33:0]    tempMe;
     logic [9:0]     Mm;  
@@ -44,6 +45,9 @@ module fmaadd(  input logic [15:0] product, x, y, z,
 
     logic [33:0]    debugPm;
     logic [33:0]    debugAm;
+
+    logic [33:0]    checkSm;
+    logic           subMcnt;
 
     assign debugPm = {23'b0, Pm}; 
     assign debugAm = ~Am + 1'b1;
@@ -90,7 +94,7 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     // addType = 2'b11: signed product and signed addend
     always_comb begin : computeMantissas
         if ((Ps ^ Zs) == 1'b1 && Zs == 1'b1)         
-            begin Sm = {23'b0, Pm} + (~Am + 1'b1); addType = 2'b01; end 
+            begin Sm = {23'b0, Pm} - Am; addType = 2'b01; end 
         else if ((Ps ^ Zs) == 1'b1 && Zs == 1'b0)    
             begin Sm = (~{23'b0, Pm} + 1'b1) + Am; addType = 2'b10; end 
         else if ((Ps ^ Zs) == 1'b0 && Zs == 1'b0)    
@@ -109,46 +113,61 @@ module fmaadd(  input logic [15:0] product, x, y, z,
         else sign = '0; //(addType == 2'b11) sign = '0; 
     end
 
+    // prepare Sm for normalization phase
+    always_comb begin : prepSm
+        if (Sm[33]) begin
+            checkSm = ~Sm + 1'b1;
+            subMcnt = 'b1;
+        end
+        else begin
+            checkSm = Sm;
+            subMcnt = 'b0;
+        end
+    end
+
     // find the leading 1 for normalization shift
     always_comb begin : priorityEncoder
-        if (Sm[33])         begin   Mcnt = 'd22;    left = 1;   end 
-        else if (Sm[32])    begin   Mcnt = 'd21;    left = 1;   end
-        else if (Sm[31])    begin   Mcnt = 'd20;    left = 1;   end
-        else if (Sm[30])    begin   Mcnt = 'd19;    left = 1;   end
-        else if (Sm[29])    begin   Mcnt = 'd18;    left = 1;   end
-        else if (Sm[28])    begin   Mcnt = 'd17;    left = 1;   end
-        else if (Sm[27])    begin   Mcnt = 'd16;    left = 1;   end
-        else if (Sm[26])    begin   Mcnt = 'd15;    left = 1;   end
-        else if (Sm[25])    begin   Mcnt = 'd14;    left = 1;   end
-        else if (Sm[24])    begin   Mcnt = 'd14;    left = 1;   end
-        else if (Sm[23])    begin   Mcnt = 'd13;    left = 1;   end
-        else if (Sm[22])    begin   Mcnt = 'd12;    left = 1;   end
-        else if (Sm[21])    begin   Mcnt = 'd11;    left = 1;   end
-        else if (Sm[20])    begin   Mcnt = 'd10;    left = 1;   end
-        else if (Sm[19])    begin   Mcnt = 9;       left = 1;   end
-        else if (Sm[18])    begin   Mcnt = 8;       left = 1;   end
-        else if (Sm[17])    begin   Mcnt = 7;       left = 1;   end
-        else if (Sm[16])    begin   Mcnt = 6;       left = 1;   end
-        else if (Sm[15])    begin   Mcnt = 5;       left = 1;   end
-        else if (Sm[14])    begin   Mcnt = 4;       left = 1;   end
-        else if (Sm[13])    begin   Mcnt = 3;       left = 1;   end
-        else if (Sm[12])    begin   Mcnt = 2;       left = 1;   end
-        else if (Sm[11])    begin   Mcnt = 1;       left = 1;   end
-        else if (Sm[10])    begin   Mcnt = 0;       left = 0;   end
-        else if (Sm[9])     begin   Mcnt = 1;       left = 0;   end
-        else if (Sm[8])     begin   Mcnt = 2;       left = 0;   end
-        else if (Sm[7])     begin   Mcnt = 3;       left = 0;   end
-        else if (Sm[6])     begin   Mcnt = 4;       left = 0;   end
-        else if (Sm[5])     begin   Mcnt = 5;       left = 0;   end
-        else if (Sm[4])     begin   Mcnt = 6;       left = 0;   end
-        else if (Sm[3])     begin   Mcnt = 7;       left = 0;   end
-        else if (Sm[2])     begin   Mcnt = 8;       left = 0;   end
-        else if (Sm[1])     begin   Mcnt = 9;       left = 0;   end
+        if (checkSm[33])         begin   Mcnt = 'd23;    left = 1;   end     
+        else if (checkSm[32])    begin   Mcnt = 'd22;    left = 1;   end
+        else if (checkSm[31])    begin   Mcnt = 'd21;    left = 1;   end
+        else if (checkSm[30])    begin   Mcnt = 'd20;    left = 1;   end
+        else if (checkSm[29])    begin   Mcnt = 'd19;    left = 1;   end
+        else if (checkSm[28])    begin   Mcnt = 'd18;    left = 1;   end
+        else if (checkSm[27])    begin   Mcnt = 'd17;    left = 1;   end
+        else if (checkSm[26])    begin   Mcnt = 'd16;    left = 1;   end
+        else if (checkSm[25])    begin   Mcnt = 'd15;    left = 1;   end
+        else if (checkSm[24])    begin   Mcnt = 'd14;    left = 1;   end
+        else if (checkSm[23])    begin   Mcnt = 'd13;    left = 1;   end
+        else if (checkSm[22])    begin   Mcnt = 'd12;    left = 1;   end
+        else if (checkSm[21])    begin   Mcnt = 'd11;    left = 1;   end
+        else if (checkSm[20])    begin   Mcnt = 'd10;    left = 1;   end
+        else if (checkSm[19])    begin   Mcnt = 9;       left = 1;   end
+        else if (checkSm[18])    begin   Mcnt = 8;       left = 1;   end
+        else if (checkSm[17])    begin   Mcnt = 7;       left = 1;   end
+        else if (checkSm[16])    begin   Mcnt = 6;       left = 1;   end
+        else if (checkSm[15])    begin   Mcnt = 5;       left = 1;   end
+        else if (checkSm[14])    begin   Mcnt = 4;       left = 1;   end
+        else if (checkSm[13])    begin   Mcnt = 3;       left = 1;   end
+        else if (checkSm[12])    begin   Mcnt = 2;       left = 1;   end
+        else if (checkSm[11])    begin   Mcnt = 1;       left = 1;   end
+        else if (checkSm[10])    begin   Mcnt = 0;       left = 0;   end
+        else if (checkSm[9])     begin   Mcnt = 1;       left = 0;   end
+        else if (checkSm[8])     begin   Mcnt = 2;       left = 0;   end
+        else if (checkSm[7])     begin   Mcnt = 3;       left = 0;   end
+        else if (checkSm[6])     begin   Mcnt = 4;       left = 0;   end
+        else if (checkSm[5])     begin   Mcnt = 5;       left = 0;   end
+        else if (checkSm[4])     begin   Mcnt = 6;       left = 0;   end
+        else if (checkSm[3])     begin   Mcnt = 7;       left = 0;   end
+        else if (checkSm[2])     begin   Mcnt = 8;       left = 0;   end
+        else if (checkSm[1])     begin   Mcnt = 9;       left = 0;   end
         else                begin   Mcnt = 'd10;    left = 0;   end
     end
 
     // shift to renormalize
     always_comb begin
+
+        //normalMcnt = subMcnt ? Mcnt - 1'b1 : Mcnt; 
+
         if (nsig == 2'b01) begin 
             Mm = product[9:0];
             Me = product[14:10];
