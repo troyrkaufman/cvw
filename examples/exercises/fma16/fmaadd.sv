@@ -8,6 +8,44 @@
 */
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module fmaadd(  input logic [15:0] product, x, y, z,
                 input logic         negz,
                 output logic [15:0] sum);
