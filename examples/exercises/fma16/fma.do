@@ -27,22 +27,26 @@ add wave sim:/testbench_fma16/dut/addunit/Pe
 add wave sim:/testbench_fma16/dut/addunit/Ze
 add wave sim:/testbench_fma16/dut/addunit/Pm
 add wave sim:/testbench_fma16/dut/addunit/Zm
-add wave sim:/testbench_fma16/dut/addunit/Zs
-add wave sim:/testbench_fma16/dut/addunit/Ps
-add wave sim:/testbench_fma16/dut/addunit/tempZ
+
+
 add wave sim:/testbench_fma16/dut/addunit/Acnt
 add wave sim:/testbench_fma16/dut/addunit/nsig
 add wave sim:/testbench_fma16/dut/addunit/ZmPreShift
 add wave sim:/testbench_fma16/dut/addunit/ZmShift
-add wave sim:/testbench_fma16/dut/addunit/Am
 add wave sim:/testbench_fma16/dut/addunit/addType
-add wave sim:/testbench_fma16/dut/addunit/debugPm
+
 add wave sim:/testbench_fma16/dut/addunit/debugAm
+add wave sim:/testbench_fma16/dut/addunit/multProd
+add wave sim:/testbench_fma16/dut/addunit/debugMultProd
+add wave sim:/testbench_fma16/dut/addunit/Am
 add wave sim:/testbench_fma16/dut/addunit/Sm 
+
 add wave sim:/testbench_fma16/dut/addunit/checkSm 
-add wave sim:/testbench_fma16/dut/addunit/Mcnt
-add wave sim:/testbench_fma16/dut/addunit/left
-add wave sim:/testbench_fma16/dut/addunit/tempMm
+add wave sim:/testbench_fma16/dut/addunit/i
+add wave sim:/testbench_fma16/dut/addunit/ZeroCnt
+
+
+#add wave sim:/testbench_fma16/dut/addunit/tempMm
 add wave sim:/testbench_fma16/dut/addunit/Mm
 add wave sim:/testbench_fma16/dut/addunit/Me
 add wave sim:/testbench_fma16/dut/addunit/sign
