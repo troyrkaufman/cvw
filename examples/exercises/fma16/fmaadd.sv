@@ -73,28 +73,28 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     // product's mantissa
     assign Pm = {1'b1,product[9:0]};
     assign Zm = {1'b1, tempZ[9:0]};
-
+ 
     // addend's sign
     assign Zs = tempZ[15];
     assign Ps = product[15];
 
-    // general comparison
-    assign compExp = ($unsigned(Pe) > $unsigned(Ze)) ? 1'b1 : 1'b0;
-    assign computeMant = ($unsigned(Pm) > $unsigned(Zm)) ? 1'b1 : 1'b0;
+    // general comparison GREATER THAN OR GREATER THAN OR EQUAL TO
+    assign compExp = ($unsigned(Pe) >= $unsigned(Ze)) ? 1'b1 : 1'b0;
+    assign compMant = ($unsigned(Pm) >= $unsigned(Zm)) ? 1'b1 : 1'b0;
 
-    logic [33:0] shiftPm;
-    assign shiftPm = {1'b0, Pm, 22'b0};
+    //logic [33:0] shiftPm;
+    //assign shiftPm = {1'b0, Pm, 22'b0};
 
     // Z mantissa alignment shift alogrithm. First align the shift amount.
     // Then preshift Z's mantissa all the way to the left then back to the right by Acnt.
     always_comb begin : alignmentShift
         // if Ze is larger, shift Pm down by Acnt
-        if (compExp) Acnt = begin {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
-        else Acnt =         begin {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
+        if (compExp) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
+        else         begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
         ZmPreShift = {Zm, 12'b0}; 
-
-        if (shiftPm) 
-        ZmShift = {ZmPreShift, 21'b0} >> Acnt;
+        if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 22'b0} >> Acnt; ZmShift = {ZmPreShift, 21'b0}; end
+        else begin              shiftPm = {1'b0, Pm, 22'b0}; ZmShift = {ZmPreShift, 21'b0} >> Acnt; end
+        //ZmShift = {ZmPreShift, 21'b0} >> Acnt;
         Am = ZmShift[43:10];
     end
 
@@ -117,7 +117,7 @@ module fmaadd(  input logic [15:0] product, x, y, z,
         else if ((Ps ^ Zs) == 1'b1 && Zs == 1'b0)    
             begin Sm = (~{Pm, 23'b0} + 1'b1) + Am; addType = 2'b10; end 
         else if ((Ps ^ Zs) == 1'b0 && Zs == 1'b0)    
-            begin Sm = ({1'b0, Pm, 22'b0}) + (Am>>1);  addType = 2'b00; end
+            begin Sm = shiftPm + (Am>>1);  addType = 2'b00; end
         else                                                        
             begin Sm = (~{Pm, 23'b0}+1'b1) + (~Am + 1'b1);addType = 2'b11; end
     end
@@ -161,7 +161,7 @@ module fmaadd(  input logic [15:0] product, x, y, z,
             tempMm = '0;
         end
         else begin
-            if (addType == 2'b00 && checkSm[33]) begin 
+            if (addType == 2'b00 && checkSm[33] && ~(shiftPmFlag)) begin 
                 tempMm = checkSm << ZeroCnt;
                 Mm = tempMm[32:23];
                 Me = Pe + 1'b1;
@@ -169,7 +169,8 @@ module fmaadd(  input logic [15:0] product, x, y, z,
             else begin
                 tempMm = checkSm << ZeroCnt;
                 Mm = tempMm[32:23];
-                Me = Pe - ZeroCnt[4:0] + 'b1;
+                if (shiftPmFlag)    Me = Pe - ZeroCnt[4:0] + Acnt[4:0] + 'b1;
+                else                Me = Pe - ZeroCnt[4:0] + 'b1;
             end
         end
     end
