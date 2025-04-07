@@ -61,8 +61,8 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     logic           shiftPmFlag;
     logic [33:0]    shiftPm;
 
-    assign debugPm = {23'b0, Pm}; 
-    assign debugAm = ~Am + 1'b1;
+    //assign debugPm = {23'b0, Pm}; 
+    //assign debugAm = ~Am + 1'b1;
 
     assign tempZ = negz ? (~z + 1'b1) : z;
 
@@ -88,14 +88,14 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     // Z mantissa alignment shift alogrithm. First align the shift amount.
     // Then preshift Z's mantissa all the way to the left then back to the right by Acnt.
     always_comb begin : alignmentShift
-        // if Ze is larger, shift Pm down by Acnt
+        // if Ze is larger than Pe, shift Pm down by Acnt
         if (compExp) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
         else         begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
         ZmPreShift = {Zm, 12'b0}; 
         if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 22'b0} >> Acnt; ZmShift = {ZmPreShift, 21'b0}; end
         else begin              shiftPm = {1'b0, Pm, 22'b0}; ZmShift = {ZmPreShift, 21'b0} >> Acnt; end
-        //ZmShift = {ZmPreShift, 21'b0} >> Acnt;
         Am = ZmShift[43:10];
+        //ZmShift = {ZmPreShift, 21'b0} >> Acnt;
     end
 
     // Check for unecessary addition then assign the nsig flag a specific value to either telling the program that either
@@ -113,18 +113,20 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     // addType = 2'b11: signed product and signed addend
     always_comb begin : computeMantissas
         if ((Ps ^ Zs) == 1'b1 && Zs == 1'b1)         
-            begin Sm = {Pm, 23'b0} - Am; addType = 2'b01; end 
+            begin Sm = shiftPm - (Am>>1); addType = 2'b01; end 
         else if ((Ps ^ Zs) == 1'b1 && Zs == 1'b0)    
-            begin Sm = (~{Pm, 23'b0} + 1'b1) + Am; addType = 2'b10; end 
+            //begin Sm = (~{Pm, 23'b0} + 1'b1) + Am; addType = 2'b10; end 
+             begin Sm = (~shiftPm + 1'b1) + (Am>>1); addType = 2'b10; end 
         else if ((Ps ^ Zs) == 1'b0 && Zs == 1'b0)    
             begin Sm = shiftPm + (Am>>1);  addType = 2'b00; end
         else                                                        
-            begin Sm = (~{Pm, 23'b0}+1'b1) + (~Am + 1'b1);addType = 2'b11; end
+            begin Sm = -shiftPm - (Am>>1);addType = 2'b11; end
     end
 
     
-    // logic [33:0] Amshifted;
-    // assign Amshifted = {1'b0, Am[33:1]};
+    // logic [33:0] debugAm;
+    assign debugAm = ((-Am)>>1);
+    assign debugPm = (~shiftPm + 1'b1);
 
     // compute sign...need to introduce negz logic here too which will add a little bit more work
     always_comb begin : computeSign

@@ -37,12 +37,15 @@ add wave sim:/testbench_fma16/dut/addunit/addType
 
 add wave sim:/testbench_fma16/dut/addunit/compExp
 add wave sim:/testbench_fma16/dut/addunit/compMant 
-add wave sim:/testbench_fma16/dut/addunit/shiftPm
+
 add wave sim:/testbench_fma16/dut/addunit/shiftPmFlag 
 
 add wave sim:/testbench_fma16/dut/addunit/debugAm
+add wave sim:/testbench_fma16/dut/addunit/debugPm
+
 #add wave sim:/testbench_fma16/dut/addunit/multProd
 #add wave sim:/testbench_fma16/dut/addunit/debugMultProd
+add wave sim:/testbench_fma16/dut/addunit/shiftPm
 add wave sim:/testbench_fma16/dut/addunit/Am
 add wave sim:/testbench_fma16/dut/addunit/Sm 
 
