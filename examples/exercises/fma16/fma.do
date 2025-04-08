@@ -22,9 +22,14 @@ add wave sim:/testbench_fma16/result
 add wave sim:/testbench_fma16/rexpected
 
 add wave sim:/testbench_fma16/dut/addunit/product
-add wave sim:/testbench_fma16/dut/addunit/sum
+add wave sim:/testbench_fma16/dut/negz
+add wave sim:/testbench_fma16/dut/negp
+add wave sim:/testbench_fma16/dut/flipZ
 add wave sim:/testbench_fma16/dut/addunit/Pe
 add wave sim:/testbench_fma16/dut/addunit/Ze
+
+add wave sim:/testbench_fma16/dut/addunit/flipPeFlag
+
 add wave sim:/testbench_fma16/dut/addunit/Pm
 add wave sim:/testbench_fma16/dut/addunit/Zm
 
@@ -35,8 +40,8 @@ add wave sim:/testbench_fma16/dut/addunit/ZmPreShift
 add wave sim:/testbench_fma16/dut/addunit/ZmShift
 add wave sim:/testbench_fma16/dut/addunit/addType
 
-add wave sim:/testbench_fma16/dut/addunit/compExp
-add wave sim:/testbench_fma16/dut/addunit/compMant 
+#add wave sim:/testbench_fma16/dut/addunit/compExp
+#add wave sim:/testbench_fma16/dut/addunit/compMant 
 
 add wave sim:/testbench_fma16/dut/addunit/shiftPmFlag 
 

@@ -7,10 +7,13 @@
 */
 
 module fmamult( input logic   [15:0]      x, y,
+                input logic               negp,
                 input logic   [1:0]       roundmode,
+                output logic              killProd,
                 output logic  [15:0]      product,
                 output logic  [3:0]       flags);
 
+logic           tempSign;
 logic           sign;
 logic [4:0]     exp;
 logic [21:0]    multmant;
@@ -36,9 +39,12 @@ always_comb begin : fpMult
         end 
     
     // Calculate the number's sign
-    sign = x[15] ^ y[15];
+    tempSign = x[15] ^ y[15];
+    sign = negp ? ~tempSign : tempSign;
     
     // bit swizzle the components together
     product = {sign, exp, shiftmant};
+
+    assign killProd = ({exp, shiftmant} == '0) ? '1 : '0;
 end 
 endmodule

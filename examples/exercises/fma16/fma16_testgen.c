@@ -142,7 +142,7 @@ void genMulTests(uint16_t *e, uint16_t *f, int sgn, char *testName, char *desc, 
             y.v = cases[j].v;
             for (k=0; k<=sgn; k++) {
                 y.v ^= (k<<15);
-                genCase(fptr, x, y, z, 1, 0, 0, 0, roundingMode, zeroAllowed, infAllowed, nanAllowed);
+                genCase(fptr, x, y, z, 1, 0, 1, 0, roundingMode, zeroAllowed, infAllowed, nanAllowed);
             }
         }
     }
@@ -169,7 +169,7 @@ void genAddTests(uint16_t *e, uint16_t *f, int sgn, char *testName, char *desc, 
             z.v = cases[j].v;
             for (k=0; k<=sgn; k++) {    
                 z.v ^= (k<<15);
-                genCase(fptr, x, y, z, 0, 1, 0, 0, roundingMode, zeroAllowed, infAllowed, nanAllowed);
+                genCase(fptr, x, y, z, 0, 1, 0, 1, roundingMode, zeroAllowed, infAllowed, nanAllowed);
             }
         }
     }
@@ -223,19 +223,20 @@ int main()
     // Multiply Cases
     // genMulTests(easyExponents, easyFracts, 0, "fmul_0v1", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genMulTests(medMulExponents, medMulFracts, 0, "fmul_1", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    // genMulTests(medMulExponents, medMulFracts, 1, "fmul_2", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    softfloat_roundingMode = softfloat_round_near_even;
+    genMulTests(medMulExponents, medMulFracts, 1, "fmul_2_signed_rne", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
 
     // // Addition Cases
     // genAddTests(easyExponents, easyFracts, 0, "fadd_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genAddTests(medAddExponents, medAddFracts, 0, "fadd_1", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
     softfloat_roundingMode = softfloat_round_near_even;
-    genAddTests(medAddExponents, medAddFracts, 1, "fadd_2_rne", "// Add tests for cases of small and large values including next largest and, RNE", 0, 0, 0, 0);
+    genAddTests(medAddExponents, medAddFracts, 1, "fadd_2_signed_rne", "// Add tests for cases of small and large values including next largest and, RNE", 0, 0, 0, 0);
 
     //genAddSimpleTests(simpleAddExponents, simpleAddFracts, 0, "fadd_simple_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
 
     // // FMA Cases
     // genMulAddTests(easyExponents, easyFracts, 0, "fmuladd_0v1", "// MulAdd with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
-    // genMulAddTests(medMulAddExponents, medMulAddFracts, 0, "fmuladd_1", "// MulAdd tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    // genMulAddTests(medMulAddExponents, medMulAddFracts, 1, "fmuladd_1_rne", "// MulAdd tests for unsigned and signed cases of small and large values including next largest in RNE", 0, 0, 0, 0);
     // genMulAddTests(medMulAddExponents, medMulAddFracts, 0, "fmuladd_2", "// MulAdd tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
     
     // // Special Cases

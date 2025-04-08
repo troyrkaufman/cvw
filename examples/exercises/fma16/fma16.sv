@@ -15,12 +15,17 @@ module fma16(input logic  [15:0]    x, y, z,
 
     logic [15:0] product;       // output from floating point mult module
     logic [15:0] sum;
+    logic [15:0] flipZ;
 
     // floating point multiplication
-    fmamult multunit(.x(x), .y(y), .roundmode(roundmode), .product(product), .flags(flags));
+    fmamult multunit(.x(x), .y(y), .negp(negp), .roundmode(roundmode), .killProd(killProd), .product(product), .flags(flags));
 
-    // floating point addition
-    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .negz(negz), .sum(sum));
+    assign flipZ = negz ? {~z[15],z[14:0]} : z; // check with corey...very weird inverted logic
+
+    //assign flipZ = negz ? z : {~z[15],z[14:0]} <- This works for when negz is asserted...very odd
+
+    // floating point addition 
+    fmaadd addunit(.product(product), .x(x), .y(y), .z(flipZ), .mul(mul), .add(add), .sum(sum));
 
     assign result = sum;
     

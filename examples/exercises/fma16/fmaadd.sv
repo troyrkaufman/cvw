@@ -7,18 +7,9 @@
     Halfprecision floating point addition with postive and negative numbers with exponents that are nonzero and/or zero
 */
 
-
-
-// fmaadd.sv
-// Troy Kaufman
-// tkaufman@g.hmc.edu
-// 3/14/17
-/*
-    Halfprecision floating point addition with postive and negative numbers with exponents that are nonzero and/or zero
-*/
-
-module fmaadd(  input logic [15:0] product, x, y, z,
-                input logic         negz,
+module fmaadd(  input logic [15:0]  product, x, y, z,
+                input logic         mul, add,
+                inout logic         killProd,
                 output logic [15:0] sum);
 
     logic [4:0]     Pe;     // sum of the product's exponents
@@ -36,14 +27,11 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     logic [43:0]    ZmShift;
     logic [43:0]    tempZmShift;
 
-    logic [4:0]     Mcnt;    // num count for leading 1 normalization shift
-    logic [4:0]     normalMcnt;
     logic [33:0]    tempMm;
-    logic [33:0]    tempMe;
+
     logic [9:0]     Mm;  
     logic [4:0]     Me;
 
-    logic           left;   // bit decides whether to shift to the left or right
     logic [1:0]     nsig;   // one of the addends or insignificant
     logic           sign;
 
@@ -55,76 +43,80 @@ module fmaadd(  input logic [15:0] product, x, y, z,
     logic [33:0]    debugAm;
 
     logic [33:0]    checkSm;
-    logic           compExp;
-    logic           compMant;
+    logic           compExpFlag;
 
     logic           shiftPmFlag;
     logic [33:0]    shiftPm;
 
-    //assign debugPm = {23'b0, Pm}; 
-    //assign debugAm = ~Am + 1'b1;
+    logic [9:0] tempZm;
+    //logic [4:0] tempZe;
+    logic tempZs;
 
-    assign tempZ = negz ? (~z + 1'b1) : z;
+    logic flipPeFlag;
+
+    //tempZ = z;
+    assign tempZ = z;
 
     // add the exponents of x and y
-    assign Pe = x[14:10] + y[14:10] - 4'd15;
+    always_comb begin : calcTypePe
+        if (mul && add) Pe = product[14:10];
+        else            Pe = x[14:10] + y[14:10] - 4'd15;     
+
+        if (x[14:10] + y[14:10] < 15)   flipPeFlag = 1'b1;
+        else                            flipPeFlag = 1'b0;
+    end
+    //assign Pe = x[14:10] + y[14:10] - 4'd15;
     assign Ze = tempZ[14:10];
 
     // product's mantissa
     assign Pm = {1'b1,product[9:0]};
     assign Zm = {1'b1, tempZ[9:0]};
- 
+
     // addend's sign
     assign Zs = tempZ[15];
     assign Ps = product[15];
 
     // general comparison GREATER THAN OR GREATER THAN OR EQUAL TO
-    assign compExp = ($unsigned(Pe) >= $unsigned(Ze)) ? 1'b1 : 1'b0;
-    assign compMant = ($unsigned(Pm) >= $unsigned(Zm)) ? 1'b1 : 1'b0;
-
-    //logic [33:0] shiftPm;
-    //assign shiftPm = {1'b0, Pm, 22'b0};
+    assign compExpFlag = ($unsigned(Pe) > $unsigned(Ze)) ? 1'b1 : 1'b0;
 
     // Z mantissa alignment shift alogrithm. First align the shift amount.
     // Then preshift Z's mantissa all the way to the left then back to the right by Acnt.
     always_comb begin : alignmentShift
         // if Ze is larger than Pe, shift Pm down by Acnt
-        if (compExp) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
-        else         begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
+        if (compExpFlag) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
+        else             begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
         ZmPreShift = {Zm, 12'b0}; 
         if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 22'b0} >> Acnt; ZmShift = {ZmPreShift, 21'b0}; end
         else begin              shiftPm = {1'b0, Pm, 22'b0}; ZmShift = {ZmPreShift, 21'b0} >> Acnt; end
         Am = ZmShift[43:10];
-        //ZmShift = {ZmPreShift, 21'b0} >> Acnt;
     end
 
     // Check for unecessary addition then assign the nsig flag a specific value to either telling the program that either
-    // the product dominates (transmit product), addend dominates (transmit addend), or neither dominates and perform normal floating point addition
+    // the product dominates (transmit product), addend dominates (transmit addend), or neither dominates and perform normal floating point addition...RNE rounding?
     always_comb begin : checkSignificance
-        if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) >= 11))         nsig = 2'b01;  
-        else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) >= 11))    nsig = 2'b10; 
+        if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) >= 11) && ~flipPeFlag)         nsig = 2'b01;  
+        else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) >= 11) && ~flipPeFlag)    nsig = 2'b10; 
+        else if (($unsigned(Ze) > (~Pe + 1'b1)) && (($unsigned(Ze) - (~Pe + 1)) >= 11) && flipPeFlag)    nsig = 2'b10;
+        else if ($unsigned(Ze) + $signed(Pe) < 0)    nsig = 2'b10;
         else                                                                                    nsig = 2'b00;
     end
 
     // compute mantissa's magnitude
-    // addType = 2'b00: unsigned addition
-    // addType = 2'b01: unsigned product and signed addend
-    // addType = 2'b10: signed product and unsigned addend
-    // addType = 2'b11: signed product and signed addend
+    // addType = 2'b00: positive addition
+    // addType = 2'b01: positive product and negative addend
+    // addType = 2'b10: negative product and positive addend
+    // addType = 2'b11: negative product and negative addend
     always_comb begin : computeMantissas
         if ((Ps ^ Zs) == 1'b1 && Zs == 1'b1)         
             begin Sm = shiftPm - (Am>>1); addType = 2'b01; end 
         else if ((Ps ^ Zs) == 1'b1 && Zs == 1'b0)    
-            //begin Sm = (~{Pm, 23'b0} + 1'b1) + Am; addType = 2'b10; end 
-             begin Sm = (~shiftPm + 1'b1) + (Am>>1); addType = 2'b10; end 
+            begin Sm = (~shiftPm + 1'b1) + (Am>>1); addType = 2'b10; end 
         else if ((Ps ^ Zs) == 1'b0 && Zs == 1'b0)    
             begin Sm = shiftPm + (Am>>1);  addType = 2'b00; end
         else                                                        
             begin Sm = -shiftPm - (Am>>1);addType = 2'b11; end
     end
-
     
-    // logic [33:0] debugAm;
     assign debugAm = ((-Am)>>1);
     assign debugPm = (~shiftPm + 1'b1);
 
@@ -157,7 +149,7 @@ module fmaadd(  input logic [15:0] product, x, y, z,
             Me = product[14:10];
             tempMm = '0;
         end
-        else if (nsig == 2'b10) begin
+        else if (nsig == 2'b10 || killProd) begin
             Mm = z[9:0];
             Me = z[14:10];
             tempMm = '0;
