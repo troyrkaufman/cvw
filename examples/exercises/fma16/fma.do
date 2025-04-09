@@ -24,10 +24,16 @@ add wave sim:/testbench_fma16/rexpected
 add wave sim:/testbench_fma16/dut/addunit/product
 add wave sim:/testbench_fma16/dut/negz
 add wave sim:/testbench_fma16/dut/negp
+add wave sim:/testbench_fma16/dut/mul
+add wave sim:/testbench_fma16/dut/add
 add wave sim:/testbench_fma16/dut/flipZ
 add wave sim:/testbench_fma16/dut/addunit/Pe
 add wave sim:/testbench_fma16/dut/addunit/Ze
-
+add wave sim:/testbench_fma16/dut/addunit/signedZe
+add wave sim:/testbench_fma16/dut/addunit/signedPe
+add wave sim:/testbench_fma16/dut/addunit/unsignedZe
+add wave sim:/testbench_fma16/dut/addunit/unsignedPe
+add wave sim:/testbench_fma16/dut/addunit/debugSignificance
 add wave sim:/testbench_fma16/dut/addunit/flipPeFlag
 
 add wave sim:/testbench_fma16/dut/addunit/Pm

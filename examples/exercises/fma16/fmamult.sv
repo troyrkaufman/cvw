@@ -9,7 +9,6 @@
 module fmamult( input logic   [15:0]      x, y,
                 input logic               negp,
                 input logic   [1:0]       roundmode,
-                output logic              killProd,
                 output logic  [15:0]      product,
                 output logic  [3:0]       flags);
 
@@ -44,7 +43,5 @@ always_comb begin : fpMult
     
     // bit swizzle the components together
     product = {sign, exp, shiftmant};
-
-    assign killProd = ({exp, shiftmant} == '0) ? '1 : '0;
 end 
 endmodule

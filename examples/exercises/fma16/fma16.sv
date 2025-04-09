@@ -18,7 +18,7 @@ module fma16(input logic  [15:0]    x, y, z,
     logic [15:0] flipZ;
 
     // floating point multiplication
-    fmamult multunit(.x(x), .y(y), .negp(negp), .roundmode(roundmode), .killProd(killProd), .product(product), .flags(flags));
+    fmamult multunit(.x(x), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .flags(flags));
 
     assign flipZ = negz ? {~z[15],z[14:0]} : z; // check with corey...very weird inverted logic
 

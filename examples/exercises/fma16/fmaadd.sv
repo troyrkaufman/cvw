@@ -9,7 +9,6 @@
 
 module fmaadd(  input logic [15:0]  product, x, y, z,
                 input logic         mul, add,
-                inout logic         killProd,
                 output logic [15:0] sum);
 
     logic [4:0]     Pe;     // sum of the product's exponents
@@ -97,9 +96,18 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) >= 11) && ~flipPeFlag)         nsig = 2'b01;  
         else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) >= 11) && ~flipPeFlag)    nsig = 2'b10; 
         else if (($unsigned(Ze) > (~Pe + 1'b1)) && (($unsigned(Ze) - (~Pe + 1)) >= 11) && flipPeFlag)    nsig = 2'b10;
-        else if ($unsigned(Ze) + $signed(Pe) < 0)    nsig = 2'b10;
+        else if ((Ze < Pe) && (Ze - Pe <= -'d11))   nsig = 2'b10;
         else                                                                                    nsig = 2'b00;
     end
+
+logic [4:0] debugSignificance;
+logic [4:0] signedPe, signedZe;
+logic [4:0] unsignedPe, unsignedZe;
+assign debugSignificance = $unsigned(Ze) + $signed(Pe);
+assign signedPe = $signed(Pe);
+assign signedZe = $signed(Ze);
+assign unsignedPe = $unsigned(Pe);
+assign unsignedZe = $unsigned(Ze);
 
     // compute mantissa's magnitude
     // addType = 2'b00: positive addition
@@ -149,7 +157,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
             Me = product[14:10];
             tempMm = '0;
         end
-        else if (nsig == 2'b10 || killProd) begin
+        else if (nsig == 2'b10) begin
             Mm = z[9:0];
             Me = z[14:10];
             tempMm = '0;
