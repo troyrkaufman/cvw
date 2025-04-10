@@ -128,14 +128,15 @@ assign unsignedZe = $unsigned(Ze);
     assign debugAm = ((-Am)>>1);
     assign debugPm = (~shiftPm + 1'b1);
 
-    // compute sign...need to introduce negz logic here too which will add a little bit more work
+    // compute sign
     always_comb begin : computeSign
         if (addType == 2'b00) sign = '0;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b01) sign = '0;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b10) sign = '1;
         else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b01) sign = '1;
         else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b10) sign = '0;
-        else sign = '0; 
+        else if (addType == 2'b11)                                                sign = '1;
+        else                                                                      sign = '0; 
     end
 
     // prepare Sm for normalization phase
@@ -180,6 +181,42 @@ assign unsignedZe = $unsigned(Ze);
     // bit swizzle results together
     assign sum = {sign,Me,Mm};
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

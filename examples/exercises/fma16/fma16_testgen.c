@@ -31,6 +31,10 @@ uint16_t medAddExponents[] = {1, 14, 15, 16, 29, 30, 0x8000};
 uint16_t medAddFracts[] = {0x000, 0x001, 0x1FF, 0x200, 0x3FF, 0x8000};
 
 // simple mult-add corner cases
+uint16_t normMulAddExponents[] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 0x8000};
+uint16_t normMulAddFracts[] = {0x000, 0x001, 0x180, 0x2c0, 0x1FF, 0x200, 0x3FF, 0x8000};
+
+// simple mult-add corner cases
 uint16_t medMulAddExponents[] = {1, 14, 15, 16, 29, 30, 0x8000};
 uint16_t medMulAddFracts[] = {0x000, 0x001, 0x1FF, 0x200, 0x3FF, 0x8000};
 
@@ -237,7 +241,7 @@ int main()
     // // FMA Cases
     // genMulAddTests(easyExponents, easyFracts, 0, "fmuladd_0v1", "// MulAdd with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genMulAddTests(medMulAddExponents, medMulAddFracts, 1, "fmuladd_1_rne", "// MulAdd tests for unsigned and signed cases of small and large values including next largest in RNE", 0, 0, 0, 0);
-    genMulAddTests(medMulAddExponents, medMulAddFracts, 1, "fmuladd_2", "// MulAdd tests for cases of small and large values including next largest and, RNE", 0, 0, 0, 0);
+    genMulAddTests(normMulAddExponents, normMulAddFracts, 1, "fmuladd_2_normal_values", "// MulAdd tests for cases of small and large values including next largest and, RNE", 0, 0, 0, 0);
     
     // // Special Cases
     // softfloat_roundingMode = softfloat_round_minMag;
