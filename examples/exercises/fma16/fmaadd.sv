@@ -18,12 +18,12 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     logic           Zs;     // Z's sign bit
     logic           Ps;     // product's sign
 
-    logic [10:0]    Zm;
-    logic [10:0]    Pm;
-    logic [33:0]    Am;      // shifted significand
+    logic [10:0]    Zm;     // Z's mantissa with prepended 1
+    logic [10:0]    Pm;     // product's mantissa with prepended 1
+    logic [33:0]    Am;      // Z's aligned mantissa
     logic [33:0]    Sm;      // sum of aligned significands
-    logic [22:0]    ZmPreShift;
-    logic [43:0]    ZmShift;
+    logic [22:0]    ZmPreShift; // shits Z's mantissa to the MSB
+    logic [43:0]    ZmShift;    // 
     logic [43:0]    tempZmShift;
 
     logic [33:0]    tempMm;
@@ -54,7 +54,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     integer i;
     logic [$clog2(35)-1:0]  ZeroCnt;
 
-    // add the exponents of x and y
+    // calculate Pe and check for small exponential cases
     always_comb begin : calcTypePe
         if (mul && add) Pe = product[14:10];
         else            Pe = x[14:10] + y[14:10] - 4'd15;     
@@ -62,24 +62,24 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         if (x[14:10] + y[14:10] < 15)   flipPeFlag = 1'b1;
         else                            flipPeFlag = 1'b0;
     end
-    //assign Pe = x[14:10] + y[14:10] - 4'd15;
+    
+    // Z's exponent
     assign Ze = z[14:10];
 
     // product's mantissa
     assign Pm = {1'b1,product[9:0]};
     assign Zm = {1'b1, z[9:0]};
 
-    // addend's sign
+    // Z's and product's signs
     assign Zs = z[15];
     assign Ps = product[15];
 
-    // general comparison GREATER THAN OR GREATER THAN OR EQUAL TO
+    // exponent comparison that will dictate how Pm or Am will be shifted
     assign compExpFlag = ($unsigned(Pe) > $unsigned(Ze)) ? 1'b1 : 1'b0;
 
-    // Z mantissa alignment shift alogrithm. First align the shift amount.
-    // Then preshift Z's mantissa all the way to the left then back to the right by Acnt.
+    // Z mantissa alignment shift alogrithm. First compute difference between Pe and Ze and set/reset Pm shifting flag.
+    // Then preshift Z's mantissa all the way to the left then shift Pm or Am to the right by Acnt.
     always_comb begin : alignmentShift
-        // if Ze is larger than Pe, shift Pm down by Acnt
         if (compExpFlag) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
         else             begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
         ZmPreShift = {Zm, 12'b0}; 
@@ -88,8 +88,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         Am = ZmShift[43:10];
     end
 
-    // Check for unecessary addition then assign the nsig flag a specific value to either telling the program that either
-    // the product dominates (transmit product), addend dominates (transmit addend), or neither dominates and perform normal floating point addition...RNE rounding?
+    // Check for unecessary addition then assign the nsig flag a specific value to tell the program that either
+    // the product dominates (transmit product), Z dominates (transmit addend), or neither dominates and perform normal floating point addition.
     always_comb begin : checkSignificance
         if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) >= 11) && ~flipPeFlag)          nsig = 2'b01;  
         else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) >= 11) && ~flipPeFlag)     nsig = 2'b10; 
@@ -98,14 +98,14 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         else                                                                                                    nsig = 2'b00;
     end
 
-logic [4:0] debugSignificance;
-logic [4:0] signedPe, signedZe;
-logic [4:0] unsignedPe, unsignedZe;
-assign debugSignificance = $unsigned(Ze) + $signed(Pe);
-assign signedPe = $signed(Pe);
-assign signedZe = $signed(Ze);
-assign unsignedPe = $unsigned(Pe);
-assign unsignedZe = $unsigned(Ze);
+// logic [4:0] debugSignificance;
+// logic [4:0] signedPe, signedZe;
+// logic [4:0] unsignedPe, unsignedZe;
+// assign debugSignificance = $unsigned(Ze) + $signed(Pe);
+// assign signedPe = $signed(Pe);
+// assign signedZe = $signed(Ze);
+// assign unsignedPe = $unsigned(Pe);
+// assign unsignedZe = $unsigned(Ze);
 
     // compute mantissa's magnitude
     // addType = 2'b00: positive addition
@@ -114,18 +114,17 @@ assign unsignedZe = $unsigned(Ze);
     // addType = 2'b11: negative product and negative addend
     always_comb begin : computeMantissas
         if ((Ps ^ Zs) == 1'b1 && Zs == 1'b1)         
-            begin Sm = shiftPm - (Am>>1); addType = 2'b01; end 
+            begin Sm = shiftPm - (Am>>1);           addType = 2'b01; end 
         else if ((Ps ^ Zs) == 1'b1 && Zs == 1'b0)    
             begin Sm = (~shiftPm + 1'b1) + (Am>>1); addType = 2'b10; end 
         else if ((Ps ^ Zs) == 1'b0 && Zs == 1'b0)    
-            begin Sm = shiftPm + (Am>>1);  addType = 2'b00; end
+            begin Sm = shiftPm + (Am>>1);           addType = 2'b00; end
         else                                                        
-            //begin Sm = -shiftPm - (Am>>1);addType = 2'b11; 
-            begin Sm = shiftPm + (Am>>1);addType = 2'b11;end
+            begin Sm = shiftPm + (Am>>1);           addType = 2'b11;end
     end
     
-    assign debugAm = ((-Am)>>1);
-    assign debugPm = (~shiftPm + 1'b1);
+    // assign debugAm = ((-Am)>>1);
+    // assign debugPm = (~shiftPm + 1'b1);
 
     // compute sign
     always_comb begin : computeSign
@@ -148,26 +147,16 @@ assign unsignedZe = $unsigned(Ze);
         ZeroCnt = i[$clog2(35)-1:0];
     end
 
+    // calculate the real mantissa and exponent
     always_comb begin : calculateMantExp
-        if (nsig == 2'b01) begin 
-            Mm = product[9:0];
-            Me = product[14:10];
-            tempMm = '0;
-        end
-        else if (nsig == 2'b10) begin
-            Mm = z[9:0];
-            Me = z[14:10];
-            tempMm = '0;
-        end
+        if (nsig == 2'b01)      begin Mm = product[9:0]; Me = product[14:10];   tempMm = '0; end
+        else if (nsig == 2'b10) begin Mm = z[9:0];       Me = z[14:10];         tempMm = '0; end
         else begin
             if (addType == 2'b00 && checkSm[33] && ~(shiftPmFlag)) begin 
-                tempMm = checkSm << ZeroCnt;
-                Mm = tempMm[32:23];
-                Me = Pe + 1'b1;
+                tempMm = checkSm << ZeroCnt; Mm = tempMm[32:23]; Me = Pe + 1'b1;
             end
             else begin
-                tempMm = checkSm << ZeroCnt;
-                Mm = tempMm[32:23];
+                tempMm = checkSm << ZeroCnt; Mm = tempMm[32:23];
                 if (shiftPmFlag)    Me = Pe - ZeroCnt[4:0] + Acnt[4:0] + 'b1;
                 else                Me = Pe - ZeroCnt[4:0] + 'b1;
             end

@@ -29,12 +29,13 @@ add wave sim:/testbench_fma16/dut/add
 add wave sim:/testbench_fma16/dut/flipZ
 add wave sim:/testbench_fma16/dut/addunit/Pe
 add wave sim:/testbench_fma16/dut/addunit/Ze
-add wave sim:/testbench_fma16/dut/addunit/signedZe
-add wave sim:/testbench_fma16/dut/addunit/signedPe
-add wave sim:/testbench_fma16/dut/addunit/unsignedZe
-add wave sim:/testbench_fma16/dut/addunit/unsignedPe
-add wave sim:/testbench_fma16/dut/addunit/debugSignificance
-add wave sim:/testbench_fma16/dut/addunit/flipPeFlag
+
+#add wave sim:/testbench_fma16/dut/addunit/signedZe
+#add wave sim:/testbench_fma16/dut/addunit/signedPe
+#add wave sim:/testbench_fma16/dut/addunit/unsignedZe
+#add wave sim:/testbench_fma16/dut/addunit/unsignedPe
+#add wave sim:/testbench_fma16/dut/addunit/debugSignificance
+#add wave sim:/testbench_fma16/dut/addunit/flipPeFlag
 
 add wave sim:/testbench_fma16/dut/addunit/Pm
 add wave sim:/testbench_fma16/dut/addunit/Zm
@@ -51,8 +52,8 @@ add wave sim:/testbench_fma16/dut/addunit/addType
 
 add wave sim:/testbench_fma16/dut/addunit/shiftPmFlag 
 
-add wave sim:/testbench_fma16/dut/addunit/debugAm
-add wave sim:/testbench_fma16/dut/addunit/debugPm
+#add wave sim:/testbench_fma16/dut/addunit/debugAm
+#add wave sim:/testbench_fma16/dut/addunit/debugPm
 
 #add wave sim:/testbench_fma16/dut/addunit/multProd
 #add wave sim:/testbench_fma16/dut/addunit/debugMultProd
