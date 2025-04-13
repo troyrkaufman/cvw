@@ -30,7 +30,8 @@ add wave sim:/testbench_fma16/dut/flipZ
 add wave sim:/testbench_fma16/dut/addunit/Pe
 add wave sim:/testbench_fma16/dut/addunit/Ze
 
-#add wave sim:/testbench_fma16/dut/addunit/signedZe
+add wave sim:/testbench_fma16/dut/addunit/Ps
+add wave sim:/testbench_fma16/dut/addunit/Zs
 #add wave sim:/testbench_fma16/dut/addunit/signedPe
 #add wave sim:/testbench_fma16/dut/addunit/unsignedZe
 #add wave sim:/testbench_fma16/dut/addunit/unsignedPe

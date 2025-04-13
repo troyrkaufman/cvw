@@ -38,8 +38,11 @@ always_comb begin : fpMult
         end 
     
     // Calculate the number's sign
-    tempSign = x[15] ^ y[15];
-    sign = negp ? ~tempSign : tempSign;
+    //tempSign = x[15] ^ y[15];
+    sign = x[15] ^ y[15];
+    //tempSign = negp ? ~x[15] : x[15];
+    //sign = tempSign ^ y[15];
+    //sign = negp ? tempSign : ~tempSign;
     
     // bit swizzle the components together
     product = {sign, exp, shiftmant};

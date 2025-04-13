@@ -3,8 +3,7 @@
 // tkaufman@g.hmc.edu
 // 2/6/25
 /*
-    Half precision floating point multiplication with positive numbers and 
-    exponents of 0
+    Half precision fused multiply accumulate functional unit
 */
 
 module fma16(input logic  [15:0]    x, y, z, 
@@ -16,16 +15,20 @@ module fma16(input logic  [15:0]    x, y, z,
     logic [15:0] product;       // output from floating point mult module
     logic [15:0] sum;
     logic [15:0] flipZ;
+    logic        flipZs;
 
     // floating point multiplication
     fmamult multunit(.x(x), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .flags(flags));
 
-    assign flipZ = negz ? {~z[15],z[14:0]} : z; // check with corey...very weird inverted logic
+    //assign flipZ = negz ? {~z[15],z[14:0]} : z; // check with corey...very weird inverted logic]
 
-    //assign flipZ = negz ? z : {~z[15],z[14:0]} <- This works for when negz is asserted...very odd
+    //assign flipZs = negz ? ~z[15] : z[15];
+
+    //assign flipZ = negz ? z : {~z[15],z[14:0]}; //<- This works for when negz is asserted...very odd
+    //assign flipZ = {flipZs, z[14:0]};
 
     // floating point addition 
-    fmaadd addunit(.product(product), .x(x), .y(y), .z(flipZ), .mul(mul), .add(add), .sum(sum));
+    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .mul(mul), .add(add), .sum(sum));
 
     assign result = sum;
     
@@ -55,39 +58,3 @@ endmodule
     // $display("Result: %b ", result);
 //end
 
-
-/////////////////////////////////////
-// Original code for floating point multiplication
-// logic           sign;
-// logic [4:0]     exp;
-// logic [21:0]    multmant;
-// logic [9:0]     shiftmant;
-// logic [15:0]    finalmant;
-
-//assign flags = 4'b0;
-
-// Instantiate the multiply module
-// Create addition module
-/*
-always_comb begin : fma16
-    // Multiply the mantissas with the implicit 1 as a prefix
-    multmant = {1'b1, x[9:0]} * {1'b1, y[9:0]};
-    
-    // Normalize mantissa product
-    if (multmant[21] == 1) 
-        begin
-            shiftmant = multmant[20:11];
-            exp = (x[14:10] + y[14:10]) - 4'd15 + 1'd1;
-        end
-    else 
-        begin
-            shiftmant = multmant[19:10];
-            exp = (x[14:10] + y[14:10]) - 4'd15;
-        end 
-    
-    // Calculate the number's sign
-    sign = x[15] ^ y[15];
-    
-    // bit swizzle the components together
-    result = {sign, exp, shiftmant};
-*/

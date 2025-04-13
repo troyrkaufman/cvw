@@ -11,45 +11,45 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
                 input logic         mul, add,
                 output logic [15:0] sum);
 
-    logic [4:0]     Pe;     // sum of the product's exponents
-    logic [4:0]     Ze;     // z's exponent
-    logic [6:0]     Acnt;    // alignment shift count
+    logic [4:0]     Pe;             // sum of the product's exponents
+    logic [4:0]     Ze;             // z's exponent
+    logic [6:0]     Acnt;           // alignment shift count
 
-    logic           Zs;     // Z's sign bit
-    logic           Ps;     // product's sign
+    logic           Zs;             // Z's sign bit
+    logic           Ps;             // product's sign
 
-    logic [10:0]    Zm;     // Z's mantissa with prepended 1
-    logic [10:0]    Pm;     // product's mantissa with prepended 1
-    logic [33:0]    Am;      // Z's aligned mantissa
-    logic [33:0]    Sm;      // sum of aligned significands
-    logic [22:0]    ZmPreShift; // shits Z's mantissa to the MSB
-    logic [43:0]    ZmShift;    // 
+    logic [10:0]    Zm;             // Z's mantissa with prepended 1
+    logic [10:0]    Pm;             // product's mantissa with prepended 1
+    logic [33:0]    Am;             // Z's aligned mantissa
+    logic [33:0]    Sm;             // sum of aligned significands
+    logic [22:0]    ZmPreShift;     // shits Z's mantissa to the MSB
+    logic [43:0]    ZmShift;        // Shifting 
     logic [43:0]    tempZmShift;
 
     logic [33:0]    tempMm;
 
-    logic [9:0]     Mm;  
-    logic [4:0]     Me;
+    logic [9:0]     Mm;             // final shifted mantissa for sum
+    logic [4:0]     Me;             // final calculated exponent for sum 
 
-    logic [1:0]     nsig;   // one of the addends or insignificant
-    logic           sign;
+    logic [1:0]     nsig;           // insignificant encoding for products and addends
+    logic           sign;           // final calculated sign for sum
 
-    logic [1:0]     addType;    // type of addition being performed
+    logic [1:0]     addType;        // type of addition being performed 
 
     logic [33:0]    debugPm;
     logic [33:0]    debugAm;
 
-    logic [33:0]    checkSm;
-    logic           compExpFlag;
+    logic [33:0]    checkSm;        // takes magnitude of Sm after summation
+    logic           compExpFlag;    // checks the difference between the product's and addend's exponents
 
-    logic           shiftPmFlag;
-    logic [33:0]    shiftPm;
+    logic           shiftPmFlag;    // 
+    logic [33:0]    shiftPm;        // 
 
-    logic [9:0] tempZm;
+    logic [9:0] tempZm;             // 
 
-    logic tempZs;
+    logic tempZs;                   // 
 
-    logic flipPeFlag;
+    logic flipPeFlag;               // 
 
     integer i;
     logic [$clog2(35)-1:0]  ZeroCnt;
