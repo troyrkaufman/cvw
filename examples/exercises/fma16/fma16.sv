@@ -12,13 +12,26 @@ module fma16(input logic  [15:0]    x, y, z,
              output logic [15:0]    result, 
              output logic [3:0]     flags);
 
-    logic [15:0] product;       // output from floating point mult module
-    logic [15:0] sum;
-    logic [15:0] flipZ;
-    logic        flipZs;
+    logic [15:0]    product;            // output from floating point mult module
+    logic [15:0]    sum;
+    logic [15:0]    flipZ;
+    logic           flipZs;
+    logic           specialCaseFlag;    // determines if special case was carried out
+    logic [15:0]    specialResult;      // result from a special case
 
     // floating point multiplication
     fmamult multunit(.x(x), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .flags(flags));
+
+    // floating point addition 
+    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .mul(mul), .add(add), .sum(sum));
+
+    specialCases specCase(.x(x), .y(y), .z(z), .product(product), .sum(sum), .result(specialResult), .specialCaseFlag(specialCaseFlag));
+
+    assign result = specialCaseFlag ? specialResult : sum;
+    //assign result = sum;
+    
+endmodule
+
 
     //assign flipZ = negz ? {~z[15],z[14:0]} : z; // check with corey...very weird inverted logic]
 
@@ -26,13 +39,6 @@ module fma16(input logic  [15:0]    x, y, z,
 
     //assign flipZ = negz ? z : {~z[15],z[14:0]}; //<- This works for when negz is asserted...very odd
     //assign flipZ = {flipZs, z[14:0]};
-
-    // floating point addition 
-    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .mul(mul), .add(add), .sum(sum));
-
-    assign result = sum;
-    
-endmodule
 
 
 

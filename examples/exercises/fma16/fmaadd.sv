@@ -98,21 +98,12 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         else                                                                                                    nsig = 2'b00;
     end
 
-// logic [4:0] debugSignificance;
-// logic [4:0] signedPe, signedZe;
-// logic [4:0] unsignedPe, unsignedZe;
-// assign debugSignificance = $unsigned(Ze) + $signed(Pe);
-// assign signedPe = $signed(Pe);
-// assign signedZe = $signed(Ze);
-// assign unsignedPe = $unsigned(Pe);
-// assign unsignedZe = $unsigned(Ze);
-
     // compute mantissa's magnitude
     // addType = 2'b00: positive addition
     // addType = 2'b01: positive product and negative addend
     // addType = 2'b10: negative product and positive addend
     // addType = 2'b11: negative product and negative addend
-    always_comb begin : computeMantissas
+    always_comb begin : computeIntermediateMantissa
         if ((Ps ^ Zs) == 1'b1 && Zs == 1'b1)         
             begin Sm = shiftPm - (Am>>1);           addType = 2'b01; end 
         else if ((Ps ^ Zs) == 1'b1 && Zs == 1'b0)    
@@ -122,9 +113,6 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         else                                                        
             begin Sm = shiftPm + (Am>>1);           addType = 2'b11;end
     end
-    
-    // assign debugAm = ((-Am)>>1);
-    // assign debugPm = (~shiftPm + 1'b1);
 
     // compute sign
     always_comb begin : computeSign
@@ -166,3 +154,21 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // bit swizzle results together
     assign sum = {sign,Me,Mm};
 endmodule
+
+
+
+
+
+
+
+// assign debugAm = ((-Am)>>1);
+// assign debugPm = (~shiftPm + 1'b1);
+
+// logic [4:0] debugSignificance;
+// logic [4:0] signedPe, signedZe;
+// logic [4:0] unsignedPe, unsignedZe;
+// assign debugSignificance = $unsigned(Ze) + $signed(Pe);
+// assign signedPe = $signed(Pe);
+// assign signedZe = $signed(Ze);
+// assign unsignedPe = $unsigned(Pe);
+// assign unsignedZe = $unsigned(Ze);

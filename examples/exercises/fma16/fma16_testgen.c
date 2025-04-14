@@ -104,9 +104,9 @@ void genCase(FILE *fptr, float16_t x, float16_t y, float16_t z, int mul, int add
     if ((softfloat_exceptionFlags >> 1) % 2) fprintf(fptr, "// skip underflow: ");
 
     // skip special cases if requested
-    if (resultmag.v == 0x0000 && !zeroAllowed) fprintf(fptr, "don't skip zero: ");
-    if ((resultmag.v == 0x7C00 || resultmag.v == 0x7BFF) && !infAllowed)  fprintf(fptr, "don't Skip inf: ");
-    if (resultmag.v >  0x7C00 && !nanAllowed)  fprintf(fptr, "don't Skip NaN: ");
+    if (resultmag.v == 0x0000 && !zeroAllowed) fprintf(fptr, " "); //skip zero:
+    if ((resultmag.v == 0x7C00 || resultmag.v == 0x7BFF) && !infAllowed)  fprintf(fptr, " "); //Skip inf:
+    if (resultmag.v >  0x7C00 && !nanAllowed)  fprintf(fptr, " "); //Skip NaN:
 
     // print the test case
     fprintf(fptr, "%04x_%04x_%04x_%02x_%04x_%01x // %s %s\n", x.v, y.v, z.v, op, result.v, flagVals, calc, flags);

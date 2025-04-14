@@ -1,18 +1,52 @@
  // specialCases.sv
+ // Troy Kaufman
+ // tkaufman@g.hmc.edu
+ // 4/13/25
+ // Purpose: Handle special FMA cases
 
- module specCase(input logic [15:0] x, y, z, product, sum,
-                output logic [15:0] specAns
-                output logic        of);
-    // Is this just a string of if statements with a variety of inputs coming from the fmamult and fmaadd modules
-   
-   // 
+ module specialCases(input logic [15:0] x, y, z, product, sum,
+                output logic [15:0] result,
+                output logic        specialCaseFlag);
 
-    if () begin  end
-    else if () begin  end
-    else if () begin  end
-    else if () begin  end
-    else if () begin  end
-    else if () begin  end
-    else if () begin  end
-    else        begin  end
+   logic [15:0]   infP;    // positive infinity value
+   logic [15:0]   infN;    // negative infinity value
+   logic [15:0]   zeroP;   // positive zero
+   logic [15:0]   zeroN;   // negative zero
+   logic [15:0]   NaN;     // NaN value
+   logic [1:0]    of;      // overflow flag
+   logic          checkXNaN; 
+   logic          checkYNaN; 
+   logic          checkZNaN; 
+
+   assign checkXNaN = (x[14:10] == 5'h1f) & (x[9:0] != 10'h000);
+   assign checkYNaN = (y[14:10] == 5'h1f) & (y[9:0] != 10'h000);
+   assign checkZNaN = (z[14:10] == 5'h1f) & (z[9:0] != 10'h000);
+
+   assign zeroP = 'h0000;
+   assign zeroN = 'h8000;
+
+   assign infP = 'h7c00;
+   assign infN = 'hfc00;
+
+   assign NaN  = 'h7e00;
+
+   // overflow logic
+   // inf: 2'b00 and 2'b11 (not an overflow), 2'b01 (product overflowed), 2'b10 (sum overflowed)
+   assign of = (product[14:10]==5'h1f) ? 2'b01 : (sum[14:10]==5'h1f) ? 2'b10 : 2'b00; 
+
+   always_comb begin : checkSpecialCases
+    // check for NaN input
+    if (checkXNaN | checkYNaN | checkZNaN) begin result = NaN; specialCaseFlag = '1; end
+    // NaN indeterminate multiplication
+    else if (((x == (zeroP|zeroN))&(y == (infP|infN))||(((x == (infP|infN))&(y == (zeroP|zeroN)))))) begin result = NaN; specialCaseFlag = '1; end
+    // NaN indeterminate subtraction
+    else if ((product == infP) & (z == infN) || (product == infN) & (z == infP)) begin result = NaN; specialCaseFlag = '1; end
+    // check overflow flag
+    else if (of == 2'b01) begin result = (product[15]) ? infN : infP; specialCaseFlag = '1; end
+    else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; specialCaseFlag = '1; end 
+    // if any inputs are infinity the output becomes infinity
+    else if ((x == infP) | (y == infP) | (z == infP)) begin result = infP; specialCaseFlag = '1; end
+    else if ((x == infN) | (y == infN) | (z == infN)) begin result = infN; specialCaseFlag = '1; end
+    else                                              begin result = sum; specialCaseFlag = '0; end
+   end
  endmodule
