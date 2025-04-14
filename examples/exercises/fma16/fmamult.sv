@@ -18,6 +18,14 @@ logic [4:0]     exp;
 logic [21:0]    multmant;
 logic [9:0]     shiftmant;
 logic [15:0]    finalmant;
+logic [14:0]    zeroInput;
+logic           zeroInputFlag;
+
+// assign zeroP = 'h0000;
+// assign zeroN = 'h8000;
+assign zeroInput = 15'h0000;
+
+assign zeroInputFlag = ((x[14:0] == zeroInput) | (y[14:0] == zeroInput));
 
 assign flags = 4'b0;
 
@@ -38,13 +46,19 @@ always_comb begin : fpMult
         end 
     
     // Calculate the number's sign
-    //tempSign = x[15] ^ y[15];
     sign = x[15] ^ y[15];
+    
+    // bit swizzle the components together
+    //product = {sign, exp, shiftmant};
+    product = zeroInputFlag ? 16'h0: {sign, exp, shiftmant};
+end 
+endmodule
+
+
+
+
+
+    //tempSign = x[15] ^ y[15];
     //tempSign = negp ? ~x[15] : x[15];
     //sign = tempSign ^ y[15];
     //sign = negp ? tempSign : ~tempSign;
-    
-    // bit swizzle the components together
-    product = {sign, exp, shiftmant};
-end 
-endmodule

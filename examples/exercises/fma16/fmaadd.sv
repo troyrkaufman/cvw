@@ -138,7 +138,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // calculate the real mantissa and exponent
     always_comb begin : calculateMantExp
         if (nsig == 2'b01)      begin Mm = product[9:0]; Me = product[14:10];   tempMm = '0; end
-        else if (nsig == 2'b10) begin Mm = z[9:0];       Me = z[14:10];         tempMm = '0; end
+        //else if (nsig == 2'b10) begin Mm = z[9:0];       Me = z[14:10];         tempMm = '0; end
+        else if ((nsig == 2'b10) | (product[14:0] == 15'h0000)) begin Mm = z[9:0];       Me = z[14:10];         tempMm = '0; end
         else begin
             if (addType == 2'b00 && checkSm[33] && ~(shiftPmFlag)) begin 
                 tempMm = checkSm << ZeroCnt; Mm = tempMm[32:23]; Me = Pe + 1'b1;

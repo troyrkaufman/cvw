@@ -44,7 +44,7 @@
     // check overflow flag
     else if (of == 2'b01) begin result = (product[15]) ? infN : infP; specialCaseFlag = '1; end
     else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; specialCaseFlag = '1; end 
-    // if any inputs are infinity the output becomes infinity
+    // if any inputs are infinity the output becomes infinity...need some additional logic to properly set the sign bit
     else if ((x == infP) | (y == infP) | (z == infP)) begin result = infP; specialCaseFlag = '1; end
     else if ((x == infN) | (y == infN) | (z == infN)) begin result = infN; specialCaseFlag = '1; end
     else                                              begin result = sum; specialCaseFlag = '0; end

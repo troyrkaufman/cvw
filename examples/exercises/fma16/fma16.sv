@@ -27,9 +27,7 @@ module fma16(input logic  [15:0]    x, y, z,
 
     specialCases specCase(.x(x), .y(y), .z(z), .product(product), .sum(sum), .result(specialResult), .specialCaseFlag(specialCaseFlag));
 
-    assign result = specialCaseFlag ? specialResult : sum;
-    //assign result = sum;
-    
+    assign result = specialCaseFlag ? specialResult : sum;  
 endmodule
 
 
