@@ -22,7 +22,7 @@ logic [14:0]    zeroInput;
 logic           zeroInputFlag;
 
 logic [4:0] signedExp;
-logic       productUnderflowFlag;
+logic       prodUFFlag;
 
 // assign zeroP = 'h0000;
 // assign zeroN = 'h8000;
@@ -51,13 +51,11 @@ always_comb begin : fpMult
     // Calculate the number's sign
     sign = x[15] ^ y[15];
 
-    signedExp = $signed(exp);
-    //productUnderflowFlag = ($signed(signedExp) <= 0) ? 'b1 : 'b0;
-    
+    //signedExp = $signed(exp);
+   
     // bit swizzle the components together
     //product = {sign, exp, shiftmant};
-    product = zeroInputFlag ? 16'h0: {sign, exp, shiftmant};
-    //product = (zeroInputFlag|productUnderflowFlag) ? 16'h0 : {sign, exp, shiftmant};
+    product = (zeroInputFlag) ? 16'h0 : {sign, exp, shiftmant};
 end 
     //assign signedExp = $signed(exp);
     //assign productUnderflowFlag = (signedExp <= 0) ? 'b1 : 'b0;
