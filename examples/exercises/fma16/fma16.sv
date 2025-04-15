@@ -25,6 +25,7 @@ module fma16(input logic  [15:0]    x, y, z,
     // floating point addition 
     fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .mul(mul), .add(add), .sum(sum));
 
+    // special scenarios where there interesting I/O to and out of the FMA algorithm are handled here
     specialCases specCase(.x(x), .y(y), .z(z), .product(product), .sum(sum), .result(specialResult), .specialCaseFlag(specialCaseFlag));
 
     assign result = specialCaseFlag ? specialResult : sum;  

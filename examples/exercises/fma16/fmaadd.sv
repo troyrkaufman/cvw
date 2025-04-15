@@ -3,56 +3,37 @@
 // Troy Kaufman
 // tkaufman@g.hmc.edu
 // 3/14/17
-/*
-    Halfprecision floating point addition with postive and negative numbers with exponents that are nonzero and/or zero
-*/
+// Purpose: Half-precision floating point addition that works with normalized positive and signed values
+
 
 module fmaadd(  input logic [15:0]  product, x, y, z,
                 input logic         mul, add,
                 output logic [15:0] sum);
 
-    logic [4:0]     Pe;             // sum of the product's exponents
-    logic [4:0]     Ze;             // z's exponent
-    logic [6:0]     Acnt;           // alignment shift count
-
-    logic           Zs;             // Z's sign bit
-    logic           Ps;             // product's sign
-
-    logic [10:0]    Zm;             // Z's mantissa with prepended 1
-    logic [10:0]    Pm;             // product's mantissa with prepended 1
-    logic [33:0]    Am;             // Z's aligned mantissa
-    logic [33:0]    Sm;             // sum of aligned significands
-    logic [22:0]    ZmPreShift;     // shits Z's mantissa to the MSB
-    logic [43:0]    ZmShift;        // Shifting 
-    logic [43:0]    tempZmShift;
-
-    logic [33:0]    tempMm;
-
-    logic [9:0]     Mm;             // final shifted mantissa for sum
-    logic [4:0]     Me;             // final calculated exponent for sum 
-
-    logic [1:0]     nsig;           // insignificant encoding for products and addends
-    logic           sign;           // final calculated sign for sum
-
-    logic [1:0]     addType;        // type of addition being performed 
-
-    logic [33:0]    debugPm;
-    logic [33:0]    debugAm;
-
-    logic [33:0]    checkSm;        // takes magnitude of Sm after summation
-    logic           compExpFlag;    // checks the difference between the product's and addend's exponents
-
-    logic           shiftPmFlag;    // 
-    logic [33:0]    shiftPm;        // 
-
-    logic [9:0] tempZm;             // 
-
-    logic tempZs;                   // 
-
-    logic flipPeFlag;               // 
-
-    integer i;
-    logic [$clog2(35)-1:0]  ZeroCnt;
+    logic [4:0]     Pe;                 // sum of the product's exponents
+    logic [4:0]     Ze;                 // z's exponent
+    logic [6:0]     Acnt;               // alignment shift count
+    logic           Zs;                 // Z's sign bit
+    logic           Ps;                 // product's sign
+    logic [10:0]    Zm;                 // Z's mantissa with prepended 1
+    logic [10:0]    Pm;                 // product's mantissa with prepended 1
+    logic [33:0]    Am;                 // Z's aligned mantissa
+    logic [33:0]    Sm;                 // sum of aligned significands
+    logic [22:0]    ZmPreShift;         // shits Z's mantissa to the MSB
+    logic [43:0]    ZmShift;            // Shifting 
+    logic [33:0]    tempMm;             // holds shifted value for the final mantissa calculation
+    logic [9:0]     Mm;                 // final shifted mantissa for sum
+    logic [4:0]     Me;                 // final calculated exponent for sum 
+    logic [1:0]     nsig;               // insignificant encoding for products and addends
+    logic           sign;               // final calculated sign for sum
+    logic [1:0]     addType;            // type of addition being performed 
+    logic [33:0]    checkSm;            // takes magnitude of Sm after summation
+    logic           compExpFlag;        // checks the difference between the product's and addend's exponents
+    logic           shiftPmFlag;        // determines if Pm will be shifted to align with Am>>1
+    logic [33:0]    shiftPm;            // the aligned Pm bus with Am>>1
+    logic           flipPeFlag;         // helps determine if either the product or addend should be killed
+    integer i;                          // integer counter for recording the number of 0s in a bus    
+    logic [$clog2(35)-1:0]  ZeroCnt;    // logic value that holds the integer i
 
     // calculate Pe and check for small exponential cases
     always_comb begin : calcTypePe
@@ -118,7 +99,6 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     always_comb begin : computeSign
         if (addType == 2'b00) sign = '0;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b01) sign = '0;
-        //else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b10) sign = '1;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b10) sign = '1;
         else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b01) sign = '1;
         else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b10) sign = '0;
