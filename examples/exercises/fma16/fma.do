@@ -21,6 +21,12 @@ add wave sim:/testbench_fma16/z
 add wave sim:/testbench_fma16/result
 add wave sim:/testbench_fma16/rexpected
 
+add wave sim:/testbench_fma16/dut/multunit/multmant
+add wave sim:/testbench_fma16/dut/multunit/shiftmant
+add wave sim:/testbench_fma16/dut/multunit/exp
+add wave sim:/testbench_fma16/dut/multunit/signedExp
+add wave sim:/testbench_fma16/dut/multunit/productUnderflowFlag
+
 add wave sim:/testbench_fma16/dut/addunit/product
 add wave sim:/testbench_fma16/dut/negz
 add wave sim:/testbench_fma16/dut/negp

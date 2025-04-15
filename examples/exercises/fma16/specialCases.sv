@@ -13,7 +13,8 @@
    logic [15:0]   zeroP;   // positive zero
    logic [15:0]   zeroN;   // negative zero
    logic [15:0]   NaN;     // NaN value
-   logic [1:0]    of;      // overflow flag
+   logic [1:0]    of;      // overflow flag variants
+   logic [1:0]    uf;      // underflow flag variants
    logic          checkXNaN; 
    logic          checkYNaN; 
    logic          checkZNaN; 
@@ -30,9 +31,11 @@
 
    assign NaN  = 'h7e00;
 
-   // overflow logic
-   // inf: 2'b00 and 2'b11 (not an overflow), 2'b01 (product overflowed), 2'b10 (sum overflowed)
+   // overflow logic inf: 2'b00 and 2'b11 (not an overflow), 2'b01 (product overflowed), 2'b10 (sum overflowed)
    assign of = (product[14:10]==5'h1f) ? 2'b01 : (sum[14:10]==5'h1f) ? 2'b10 : 2'b00; 
+
+   // inf: 2'b00 and 2'b11 (not an overflow), 2'b01 (product overflowed), 2'b10 (sum overflowed)
+   assign uf = (product[14:10]==5'h00) ? 2'b01 : (sum[14:10]==5'h00) ? 2'b10 : 2'b00; 
 
    always_comb begin : checkSpecialCases
     // check for NaN input
@@ -44,9 +47,36 @@
     // check overflow flag
     else if (of == 2'b01) begin result = (product[15]) ? infN : infP; specialCaseFlag = '1; end
     else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; specialCaseFlag = '1; end 
-    // if any inputs are infinity the output becomes infinity...need some additional logic to properly set the sign bit
-    else if ((x == infP) | (y == infP) | (z == infP)) begin result = infP; specialCaseFlag = '1; end
-    else if ((x == infN) | (y == infN) | (z == infN)) begin result = infN; specialCaseFlag = '1; end
+    // check underflow flag
+    else if (uf == 2'b01) begin result = z; specialCaseFlag = '1; end
+    else if (uf == 2'b10) begin result = product; specialCaseFlag = '1; end 
+    // at least one of the inputs are inf
+    else if ((x == infP | y == infP) & (x[15] ^ y[15])) begin result = infN; specialCaseFlag = '1; end
+    else if ((x == infP | y == infP) & (x[15] ~^ y[15])) begin result = infP; specialCaseFlag = '1; end
+    else if ((x == infN | y == infN) & (x[15] ^ y[15])) begin result = infN; specialCaseFlag = '1; end
+    else if ((x == infN | y == infN) & (x[15] ~^ y[15])) begin result = infP; specialCaseFlag = '1; end
     else                                              begin result = sum; specialCaseFlag = '0; end
    end
  endmodule
+
+
+
+
+
+
+
+
+
+
+
+     // if any inputs are infinity the output becomes infinity...need some additional logic to properly set the sign bit
+    // else if ((x == infP) | (y == infP) | (z == infP)) begin //998 errors with this code
+    //   specialCaseFlag = '1; 
+    //   if ((x[15] ^ y[15]) & ((of == 2'b01) & z[15]))     result = infN;
+    //   else                                               result = infP;
+    // end
+    // else if ((x == infN) | (y == infN) | (z == infN)) begin
+    //   specialCaseFlag = '1; 
+    //   if (x[15] ^ y[15])   result = infN;
+    //   else                 result = infP;
+    // end
