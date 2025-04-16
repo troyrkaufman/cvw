@@ -20,7 +20,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     logic [33:0]    Am;                 // Z's aligned mantissa
     logic [33:0]    Sm;                 // sum of aligned significands
     logic [22:0]    ZmPreShift;         // shits Z's mantissa to the MSB
-    logic [43:0]    ZmShift;            // Shifting 
+    logic [43:0]    ZmShift;            // shifts  
     logic [33:0]    tempMm;             // holds shifted value for the final mantissa calculation
     logic [9:0]     Mm;                 // final shifted mantissa for sum
     logic [4:0]     Me;                 // final calculated exponent for sum 
