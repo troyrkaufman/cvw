@@ -8,7 +8,8 @@
 
 module fmaadd(  input logic [15:0]  product, x, y, z,
                 input logic         mul, add,
-                output logic [15:0] sum);
+                output logic [15:0] sum,
+                output logic [33:0] fullSum);
 
     logic [4:0]     Pe;                 // sum of the product's exponents
     logic [4:0]     Ze;                 // z's exponent
@@ -132,6 +133,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         end
     end
 
+    assign fullSum = checkSm;
     // bit swizzle results together
     assign sum = {sign,Me,Mm};
 endmodule

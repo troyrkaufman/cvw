@@ -6,7 +6,7 @@
 
  module specialCases(input logic [15:0] x, y, z, product, sum,
                 output logic [15:0] result,
-                output logic        specialCaseFlag);
+                output logic        specialCaseFlag, anyNaN);
 
    logic [15:0]   infP;           // positive infinity value
    logic [15:0]   infN;           // negative infinity value
@@ -18,11 +18,14 @@
    logic          checkXNaN;      // checks if X is NaN
    logic          checkYNaN;      // checks if Y is NaN
    logic          checkZNaN;      // checks if Z is NaN
+   logic          anyNaN          // checks if any inputs are NaN
    logic          underFlowFlag;  // checks if the product produces an underflow
 
    assign checkXNaN = (x[14:10] == 5'h1f) & (x[9:0] != 10'h000);
    assign checkYNaN = (y[14:10] == 5'h1f) & (y[9:0] != 10'h000);
    assign checkZNaN = (z[14:10] == 5'h1f) & (z[9:0] != 10'h000);
+
+   assign anyNaN = checkXNaN | checkYNaN | checkZNaN;
 
    assign zeroP = 'h0000;
    assign zeroN = 'h8000;
@@ -40,13 +43,14 @@
 
    always_comb begin : checkSpecialCases
     // check for NaN input
-    if (checkXNaN | checkYNaN | checkZNaN) begin result = NaN; specialCaseFlag = '1; end
+    if (anyNaN) begin result = NaN; specialCaseFlag = '1; end
 
     // NaN indeterminate multiplication
     else if (((x == (zeroP|zeroN))&(y == (infP|infN))||(((x == (infP|infN))&(y == (zeroP|zeroN)))))) begin result = NaN; specialCaseFlag = '1; end
 
     // NaN indeterminate subtraction
     else if ((product == infP) & (z == infN) || (product == infN) & (z == infP)) begin result = NaN; specialCaseFlag = '1; end
+    
     // check overflow flag
     else if (of == 2'b01) begin result = (product[15]) ? infN : infP; specialCaseFlag = '1; end
     else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; specialCaseFlag = '1; end 

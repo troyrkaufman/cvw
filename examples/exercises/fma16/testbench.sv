@@ -6,7 +6,7 @@ module testbench_fma16;
   logic        mul, add, negp, negz;
   logic [1:0]  roundmode;
   logic [31:0] vectornum, errors;
-  logic [75:0] testvectors[10000:0];
+  logic [75:0] testvectors[1000000:0]; // 
   logic [3:0]  flags, flagsexpected; // Invalid, Overflow, Underflow, Inexact
 
   // instantiate device under test
@@ -21,7 +21,7 @@ module testbench_fma16;
   // at start of test, load vectors and pulse reset
   initial
     begin
-      $readmemh("work/fmuladd_2_complete.tv", testvectors);
+      $readmemh("work/fmuladd_2_complete_v2.tv", testvectors);
       vectornum = 0; errors = 0;
       reset = 1; #22; reset = 0;
     end

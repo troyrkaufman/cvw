@@ -15,18 +15,22 @@ module fma16(input logic  [15:0]    x, y, z,
     logic [15:0]    product;            // output from floating point mult module
     logic [15:0]    sum;
     logic [15:0]    flipZ;
+    logic [15:0]    flipX;
     logic           flipZs;
     logic           specialCaseFlag;    // determines if special case was carried out
     logic [15:0]    specialResult;      // result from a special case
 
+    assign flipZ = negz ? {~z[15],z[14:0]} : z; // something wrong as usual with signage
+    assign flipX = negp ? {~x[15],x[14:0]} : x; // something wrong as usual with signage
+
     // floating point multiplication
-    fmamult multunit(.x(x), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .flags(flags));
+    fmamult multunit(.x(flipX), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .flags(flags));
 
     // floating point addition 
-    fmaadd addunit(.product(product), .x(x), .y(y), .z(z), .mul(mul), .add(add), .sum(sum));
+    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .mul(mul), .add(add), .sum(sum));
 
     // special scenarios where there interesting I/O to and out of the FMA algorithm are handled here
-    specialCases specCase(.x(x), .y(y), .z(z), .product(product), .sum(sum), .result(specialResult), .specialCaseFlag(specialCaseFlag));
+    specialCases specCase(.x(flipX), .y(y), .z(flipZ), .product(product), .sum(sum), .result(specialResult), .specialCaseFlag(specialCaseFlag));
 
     assign result = specialCaseFlag ? specialResult : sum;  
 endmodule
