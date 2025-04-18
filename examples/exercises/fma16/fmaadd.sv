@@ -52,7 +52,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
 
     // product's mantissa
     //assign Pm = {1'b1,product[9:0]};
-    assign Pm = fullPm[21] ? {1'b1, fullPm[20:1]} : {1'b1, fullPm[19:0]};
+    assign Pm = fullPm[21] ? {1'b1, fullPm[20:1], 1'b0} : {1'b1, fullPm[19:0], 1'b0};
     assign Zm = {1'b1, z[9:0]};
 
     // Z's and product's signs
@@ -70,8 +70,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         ZmPreShift = {Zm, 12'b0}; 
         // if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 22'b0} >> Acnt; ZmShift = {ZmPreShift, 21'b0}; end
         // else begin              shiftPm = {1'b0, Pm, 22'b0}; ZmShift = {ZmPreShift, 21'b0} >> Acnt; end
-        if (shiftPmFlag) begin  shiftPm = {Pm, 12'b0} >> (Acnt); ZmShift = {ZmPreShift, 21'b0}; end
-        else begin              shiftPm = {Pm, 12'b0}; ZmShift = {ZmPreShift, 21'b0} >> (Acnt); end
+        if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 11'b0} >> (Acnt); ZmShift = {ZmPreShift, 21'b0}; end
+        else begin              shiftPm = {1'b0, Pm, 11'b0}; ZmShift = {ZmPreShift, 21'b0} >> (Acnt); end
         Am = ZmShift[43:10];
     end
 
