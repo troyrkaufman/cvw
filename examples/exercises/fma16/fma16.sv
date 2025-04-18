@@ -24,16 +24,17 @@ module fma16(input logic  [15:0]    x, y, z,
     logic           nonZeroResults;
     logic           overFlowFlag;
     logic [15:0]    roundedResult;
+    logic [21:0]    fullPm;
 
 
     assign flipZ = negz ? {~z[15],z[14:0]} : z; // something wrong as usual with signage
     assign flipX = negp ? {~x[15],x[14:0]} : x; // something wrong as usual with signage
 
     // floating point multiplication
-    fmamult multunit(.x(flipX), .y(y), .negp(negp), .roundmode(roundmode),.product(product));
+    fmamult multunit(.x(flipX), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .fullPm(fullPm));
 
     // floating point addition 
-    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum));
+    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum));
 
     // floating point special scenarios and flags
     specialCases specCase(.x(flipX), .y(y), .z(flipZ), .product(product), .sum(sum), .nonZeroResults(nonZeroResults), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag(overFlowFlag), .flags(flags));

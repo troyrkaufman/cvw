@@ -7,6 +7,7 @@
 
 
 module fmaadd(  input logic [15:0]  product, x, y, z,
+                input logic [21:0]  fullPm,
                 input logic         mul, add,
                 output logic [15:0] sum,
                 output logic [33:0] fullSum);
@@ -17,7 +18,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     logic           Zs;                 // Z's sign bit
     logic           Ps;                 // product's sign
     logic [10:0]    Zm;                 // Z's mantissa with prepended 1
-    logic [10:0]    Pm;                 // product's mantissa with prepended 1
+    //logic [10:0]    Pm;                 // product's mantissa with prepended 1
+    logic [21:0]    Pm;
     logic [33:0]    Am;                 // Z's aligned mantissa
     logic [33:0]    Sm;                 // sum of aligned significands
     logic [22:0]    ZmPreShift;         // shits Z's mantissa to the MSB
@@ -49,7 +51,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     assign Ze = z[14:10];
 
     // product's mantissa
-    assign Pm = {1'b1,product[9:0]};
+    //assign Pm = {1'b1,product[9:0]};
+    assign Pm = fullPm[21] ? {1'b1, fullPm[20:1]} : {1'b1, fullPm[19:0]};
     assign Zm = {1'b1, z[9:0]};
 
     // Z's and product's signs
@@ -65,8 +68,10 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         if (compExpFlag) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
         else             begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
         ZmPreShift = {Zm, 12'b0}; 
-        if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 22'b0} >> Acnt; ZmShift = {ZmPreShift, 21'b0}; end
-        else begin              shiftPm = {1'b0, Pm, 22'b0}; ZmShift = {ZmPreShift, 21'b0} >> Acnt; end
+        // if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 22'b0} >> Acnt; ZmShift = {ZmPreShift, 21'b0}; end
+        // else begin              shiftPm = {1'b0, Pm, 22'b0}; ZmShift = {ZmPreShift, 21'b0} >> Acnt; end
+        if (shiftPmFlag) begin  shiftPm = {Pm, 12'b0} >> (Acnt); ZmShift = {ZmPreShift, 21'b0}; end
+        else begin              shiftPm = {Pm, 12'b0}; ZmShift = {ZmPreShift, 21'b0} >> (Acnt); end
         Am = ZmShift[43:10];
     end
 
@@ -99,10 +104,10 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // compute sign
     always_comb begin : computeSign
         if (addType == 2'b00) sign = '0;
-        else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b01) sign = '0;
-        else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm})) && addType == 2'b10) sign = '1;
-        else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b01) sign = '1;
-        else if (($unsigned({Ze, Zm}) > $unsigned({Pe, Pm})) && addType == 2'b10) sign = '0;
+        else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm, 11'b0})) && addType == 2'b01) sign = '0;
+        else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm, 11'b0})) && addType == 2'b10) sign = '1;
+        else if (($unsigned({Ze, Zm, 11'b0}) > $unsigned({Pe, Pm})) && addType == 2'b01) sign = '1;
+        else if (($unsigned({Ze, Zm, 11'b0}) > $unsigned({Pe, Pm})) && addType == 2'b10) sign = '0;
         else if (addType == 2'b11)                                                sign = '1;
         else                                                                      sign = '0; 
     end

@@ -40,6 +40,8 @@ add wave sim:/testbench_fma16/dut/addunit/Ze
 
 add wave sim:/testbench_fma16/dut/addunit/Ps
 add wave sim:/testbench_fma16/dut/addunit/Zs
+add wave sim:/testbench_fma16/dut/addunit/fullSum
+add wave sim:/testbench_fma16/dut/addunit/sum
 
 # signals for from specialCases.sv
 add wave sim:/testbench_fma16/dut/specCase/specialCaseFlag

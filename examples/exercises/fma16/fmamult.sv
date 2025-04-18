@@ -8,7 +8,8 @@
 module fmamult( input logic   [15:0]      x, y,
                 input logic               negp,
                 input logic   [1:0]       roundmode,
-                output logic  [15:0]      product);
+                output logic  [15:0]      product,
+                output logic    [21:0]      fullPm);
 
 logic           sign;           // product's sign
 logic [4:0]     exp;            // product's exponent
@@ -41,6 +42,8 @@ always_comb begin : fpMult
 
     product = (zeroInputFlag) ? 16'h0 : {sign, exp, shiftmant};
 end 
+
+assign fullPm = multmant;
 endmodule
 
 
