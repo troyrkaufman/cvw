@@ -74,7 +74,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // the product dominates (transmit product), Z dominates (transmit addend), or neither dominates and perform normal floating point addition.
     always_comb begin : checkSignificance
         if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) > 11) && ~flipPeFlag)          nsig = 2'b01;  
-        else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) > 11) && ~flipPeFlag)     nsig = 2'b10; 
+        //else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) > 12) && ~flipPeFlag)     nsig = 2'b10; // does this even contribute to anything?
         else if (($unsigned(Ze) > (~Pe + 1'b1)) && (($unsigned(Ze) - (~Pe + 1)) > 11) && flipPeFlag)           nsig = 2'b10;
         else if ((Ze < Pe) && (Ze - Pe < -'d11))   nsig = 2'b10;
         else                                                                                                    nsig = 2'b00;

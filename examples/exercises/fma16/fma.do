@@ -22,8 +22,8 @@ add wave sim:/testbench_fma16/z
 add wave sim:/testbench_fma16/result
 add wave sim:/testbench_fma16/rexpected
 
-#add wave sim:/testbench_fma16/dut/multunit/multmant
-#add wave sim:/testbench_fma16/dut/multunit/shiftmant
+add wave sim:/testbench_fma16/dut/multunit/multmant
+add wave sim:/testbench_fma16/dut/multunit/shiftmant
 #add wave sim:/testbench_fma16/dut/multunit/exp
 #add wave sim:/testbench_fma16/dut/multunit/signedExp
 #add wave sim:/testbench_fma16/dut/multunit/productUnderflowFlag
@@ -47,8 +47,9 @@ add wave sim:/testbench_fma16/dut/specCase/specialCaseFlag
 #add wave sim:/testbench_fma16/dut/specCase/uFFLag 
 #add wave sim:/testbench_fma16/dut/specCase/inVFlag
 #add wave sim:/testbench_fma16/dut/specCase/inXFLag  
-add wave sim://testbench_fma16/dut/specCase/flags
+add wave sim:/testbench_fma16/dut/specCase/flags
 add wave sim:/testbench_fma16/dut/specCase/result
+add wave sim:/testbench_fma16/dut/addunit/tempMm
 
 # fmaround signals
 add wave sim:/testbench_fma16/dut/roundunit/takeRound
