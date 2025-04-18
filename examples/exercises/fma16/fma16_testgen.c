@@ -238,12 +238,13 @@ int main()
     // genMulTests(easyExponents, easyFracts, 0, "fmul_0v1", "// Multiply with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genMulTests(medMulExponents, medMulFracts, 0, "fmul_1", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
     softfloat_roundingMode = softfloat_round_near_even;
+    //softfloat_roundingMode = softfloat_round_max;
     //genMulTests(normMulAddExponents, normMulAddFracts, 1, "fmul_2_complete", "// Mul tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
 
     // // Addition Cases
     // genAddTests(easyExponents, easyFracts, 0, "fadd_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genAddTests(medAddExponents, medAddFracts, 0, "fadd_1", "// Add tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
-    softfloat_roundingMode = softfloat_round_minMag;
+    //softfloat_roundingMode = softfloat_round_minMag;
     //genAddTests(medAddExponents, medAddFracts, 1, "fadd_2_complete", "// Add tests for cases of small and large values including next largest and, RNE", 0, 0, 0, 0);
 
     //genAddSimpleTests(simpleAddExponents, simpleAddFracts, 0, "fadd_simple_0v1", "// Add with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
@@ -251,7 +252,7 @@ int main()
     // // FMA Cases
     // genMulAddTests(easyExponents, easyFracts, 0, "fmuladd_0v1", "// MulAdd with exponent of 0, significand of 1.0 and 1.1, RZ", 0, 0, 0, 0);
     // genMulAddTests(medMulAddExponents, medMulAddFracts, 1, "fmuladd_1_rne", "// MulAdd tests for unsigned and signed cases of small and large values including next largest in RNE", 0, 0, 0, 0);
-    genMulAddTests(normMulAddExponents, normMulAddFracts, 1, "fmuladd_2_complete_v2", "// MulAdd tests for cases of small and large values including next largest and, RZ", 0, 0, 0, 0);
+    genMulAddTests(normMulAddExponents, normMulAddFracts, 1, "fmuladd_2_complete_v2", "// MulAdd tests for cases of small and large values including next largest and, RNE", softfloat_roundingMode, 0, 0, 0);
     
     // // Special Cases
     //genMulAddTests(specialExponents, specialFracts, 1, "fma_special_cases", "// Tests for special inputs, RZ", 0, 0, 0, 0);

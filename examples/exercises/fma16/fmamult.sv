@@ -8,8 +8,7 @@
 module fmamult( input logic   [15:0]      x, y,
                 input logic               negp,
                 input logic   [1:0]       roundmode,
-                output logic  [15:0]      product,
-                output logic  [3:0]       flags);
+                output logic  [15:0]      product);
 
 logic           sign;           // product's sign
 logic [4:0]     exp;            // product's exponent
@@ -19,7 +18,7 @@ logic           zeroInputFlag;  // flag that determines if either input is +/- 0
 
 assign zeroInputFlag = ((x[14:0] == 15'h0) | (y[14:0] == 15'h0));
 
-assign flags = 4'b0;
+//assign flags = 4'b0;
 
 always_comb begin : fpMult
     // Multiply the mantissas with the implicit 1 as a prefix

@@ -133,7 +133,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         end
     end
 
-    assign fullSum = checkSm;
+    assign fullSum = tempMm;
     // bit swizzle results together
     assign sum = {sign,Me,Mm};
 endmodule

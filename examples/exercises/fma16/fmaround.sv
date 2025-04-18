@@ -2,13 +2,14 @@
 // tkaufman@g.hmc.edu
 // 4/16/2025
 // Purpose: Half precision floating point rounding module
+// RNE: 'b01 RP: 'b11 RN: 'b01 RZ: 'b00
 
-module fmaround(input logic [15:0] x, y, z, product, sum,
-                input logic [33:0] fullSum,
-                input logic overFlowFlag, anyNaN
-                input logic [1:0] roudnmode,
-                output logic [15:0] rndFloat,
-                output logic [3:0] flags);
+module fmaround(input logic     [15:0]  product, sum,
+                input logic     [33:0]  fullSum,
+                input logic             overFlowFlag,
+                input logic     [1:0]   roundmode,
+                output logic    [15:0]  rndFloat,
+                output logic            nonZeroResults, takeRound);
 
     logic sign;
     logic lsb;
@@ -23,21 +24,23 @@ module fmaround(input logic [15:0] x, y, z, product, sum,
     logic inXFlag;
     logic underFlowFlag;
 
-   logic [15:0]   infP;           // positive infinity value
-   logic [15:0]   infN;           // negative infinity value
-   logic [15:0]   zeroP;          // positive zero
-   logic [15:0]   zeroN;          // negative zero
-   logic [15:0]   NaN;            // NaN value
+    logic [14:0]    maxNum; 
 
-   assign sign = sum[15];
+    logic [15:0]   infP;           // positive infinity value
+    logic [15:0]   infN;           // negative infinity value
+    // logic [15:0]   zeroP;          // positive zero
+    // logic [15:0]   zeroN;          // negative zero
+    // logic [15:0]   NaN;            // NaN value
 
-   assign zeroP = 'h0000;
-   assign zeroN = 'h8000;
+    assign sign = sum[15];
+    assign maxNum = 'h7bff;
+//     assign zeroP = 'h0000;
+//     assign zeroN = 'h8000;
 
    assign infP = 'h7c00;
    assign infN = 'hfc00;
 
-   assign NaN  = 'h7e00;
+//    assign NaN  = 'h7e00;
 
     // RNE logic
     assign lsb = fullSum[23];
@@ -51,54 +54,52 @@ module fmaround(input logic [15:0] x, y, z, product, sum,
         
     always_comb begin : rounding
     // RNE
-        if (roundmode == 2'b01)
-            if (overFlowflag & sign)
-                begin result = infP; end
-            else if (overFlowFlag & ~sign)
-                begin result = infN; end
-            else if (rndPrime & (lsbPrime | stickyPrime))
-                begin result = sum[14:0] + 'd1; end
-            else    
-                result = sum;
-    // RP
-        else if (roundmode == 2'b10) 
+        if (roundmode == 2'b00)
             if (overFlowFlag & sign)
-                begin result = -MAXNUM; end
+                begin rndFloat = infP; takeRound = '1; end
             else if (overFlowFlag & ~sign)
-                begin result = infP; end
+                begin rndFloat = infN; takeRound = '1; end
+            else if (rndPrime & (lsbPrime | stickyPrime))
+                begin rndFloat = {sign, sum[14:0] + 15'd1}; takeRound = '1; end
+            else    
+                begin rndFloat = sum; takeRound = '0; end
+    // RZ 
+        else if (roundmode == 2'b00) 
+            if (overFlowFlag & sign) 
+                begin rndFloat = {sign, maxNum}; takeRound = '1; end
+            else if (overFlowFlag & ~sign)
+                begin rndFloat = infP; takeRound = '1; end
+            else 
+            begin rndFloat = 'h0; takeRound = 0; end
+    // RP
+        else if (roundmode == 2'b11) 
+            if (overFlowFlag & sign)
+                begin rndFloat = {sign, maxNum}; takeRound = '1; end
+            else if (overFlowFlag & ~sign)
+                begin rndFloat = infP; takeRound = '1; end
             else if (~sign)
                 if (rndPrime | stickyPrime)
-                    begin result = sum[14:0] + 'd1; end
+                    begin rndFloat = {sign, sum[14:0] + 15'd1}; takeRound = '1; end
                 else 
-                    result = sum;
+                    begin rndFloat = sum; takeRound = '0; end
             else
-                result = sum;
-    // RZ
-        else if (roundmode = 2'b11)
+                begin rndFloat = sum; takeRound = '0; end
+    // RN
+        else if (roundmode == 2'b10)
             if (overFlowFlag & sign)
-                begin result = infN; end
+                begin rndFloat = infN; takeRound = '1; end
             else if (overFlowFlag & ~sign)
-                begin result = MAXNUM; end
+                begin rndFloat = {sign, maxNum}; takeRound = '1; end
             else if (sign)
                 if (rndPrime | stickyPrime)
-                    begin result = sum[14:0] - 'd1; end
+                    begin rndFloat = {sign, sum[14:0] - 15'd1}; takeRound = '1; end
                 else 
-                    result = sum;
+                    begin rndFloat = sum; takeRound = '0; end
             else
-                result = sum;
+                begin rndFloat = sum; takeRound = '0; end
         else 
-            result = sum;
-
-    always_comb begin : invalidFlag
-        //if(anyNaN) begin invflag = '1
-        if (x == ())
+            begin rndFloat = sum; takeRound = '0; end
     end
 
-    assign flags = {inVFlag, overFlowFlag, underFlowFlag, inXFlag};
-
-    end
-
-
-
-
+    assign nonZeroResults = rndPrime | stickyPrime; 
 endmodule

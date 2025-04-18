@@ -9,12 +9,13 @@ onbreak {resume}
 vlib worklib
 
 #vlog -lint -sv -work worklib fma16.sv testbench.sv  - missing fmamult.sv
-vlog -lint -sv -work worklib fma16.sv testbench.sv fmamult.sv fmaadd.sv specialCases.sv
+vlog -lint -sv -work worklib fma16.sv testbench.sv fmamult.sv fmaadd.sv specialCases.sv fmaround.sv
 vopt +acc worklib.testbench_fma16 -work worklib -o testbenchopt
 vsim -lib worklib testbenchopt
 
 add wave sim:/testbench_fma16/clk
 add wave sim:/testbench_fma16/reset
+add wave sim:/testbench_fma16/roundmode
 add wave sim:/testbench_fma16/x
 add wave sim:/testbench_fma16/y
 add wave sim:/testbench_fma16/z
@@ -33,6 +34,7 @@ add wave sim:/testbench_fma16/dut/negp
 add wave sim:/testbench_fma16/dut/mul
 add wave sim:/testbench_fma16/dut/add
 add wave sim:/testbench_fma16/dut/flipZ
+add wave sim:/testbench_fma16/dut/flipX
 add wave sim:/testbench_fma16/dut/addunit/Pe
 add wave sim:/testbench_fma16/dut/addunit/Ze
 
@@ -41,8 +43,24 @@ add wave sim:/testbench_fma16/dut/addunit/Zs
 
 # signals for from specialCases.sv
 add wave sim:/testbench_fma16/dut/specCase/specialCaseFlag
-add wave sim:/testbench_fma16/dut/specCase/of 
+#add wave sim:/testbench_fma16/dut/specCase/oFFLag 
+#add wave sim:/testbench_fma16/dut/specCase/uFFLag 
+#add wave sim:/testbench_fma16/dut/specCase/inVFlag
+#add wave sim:/testbench_fma16/dut/specCase/inXFLag  
+add wave sim://testbench_fma16/dut/specCase/flags
 add wave sim:/testbench_fma16/dut/specCase/result
+
+# fmaround signals
+add wave sim:/testbench_fma16/dut/roundunit/takeRound
+add wave sim:/testbench_fma16/dut/roundunit/lsb
+add wave sim:/testbench_fma16/dut/roundunit/lsbPrime
+add wave sim:/testbench_fma16/dut/roundunit/guard
+add wave sim:/testbench_fma16/dut/roundunit/rndPrime
+add wave sim:/testbench_fma16/dut/roundunit/rnd
+add wave sim:/testbench_fma16/dut/roundunit/sticky
+add wave sim:/testbench_fma16/dut/roundunit/stickyPrime 
+add wave sim:/testbench_fma16/dut/roundunit/rndFloat
+add wave sim:/testbench_fma16/dut/roundunit/nonZeroResults
 
 #add wave sim:/testbench_fma16/dut/addunit/signedPe
 #add wave sim:/testbench_fma16/dut/addunit/unsignedZe

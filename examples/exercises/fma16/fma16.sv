@@ -18,30 +18,40 @@ module fma16(input logic  [15:0]    x, y, z,
     logic [15:0]    flipX;
     logic           flipZs;
     logic           specialCaseFlag;    // determines if special case was carried out
+    logic           takeRound;
     logic [15:0]    specialResult;      // result from a special case
+    logic [33:0]    fullSum;
+    logic           nonZeroResults;
+    logic           overFlowFlag;
+    logic [15:0]    roundedResult;
+
 
     assign flipZ = negz ? {~z[15],z[14:0]} : z; // something wrong as usual with signage
     assign flipX = negp ? {~x[15],x[14:0]} : x; // something wrong as usual with signage
 
     // floating point multiplication
-    fmamult multunit(.x(flipX), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .flags(flags));
+    fmamult multunit(.x(flipX), .y(y), .negp(negp), .roundmode(roundmode),.product(product));
 
     // floating point addition 
-    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .mul(mul), .add(add), .sum(sum));
+    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum));
 
-    // special scenarios where there interesting I/O to and out of the FMA algorithm are handled here
-    specialCases specCase(.x(flipX), .y(y), .z(flipZ), .product(product), .sum(sum), .result(specialResult), .specialCaseFlag(specialCaseFlag));
+    // floating point special scenarios and flags
+    specialCases specCase(.x(flipX), .y(y), .z(flipZ), .product(product), .sum(sum), .nonZeroResults(nonZeroResults), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag(overFlowFlag), .flags(flags));
 
-    assign result = specialCaseFlag ? specialResult : sum;  
+    // floating point rounding
+    fmaround roundunit(.product(product), .sum(sum), .fullSum(fullSum), .overFlowFlag(overFlowFlag), .roundmode(roundmode), .rndFloat(roundedResult), .nonZeroResults(nonZeroResults), .takeRound(takeRound));
+
+    //assign result = specialCaseFlag ? specialResult : sum;  
+
+    always_comb begin : finalResult
+        if (specialCaseFlag)    result = specialResult;
+        else if (takeRound)     result = roundedResult;
+        else                    result = sum;
+    end
 endmodule
 
 
-    //assign flipZ = negz ? {~z[15],z[14:0]} : z; // check with corey...very weird inverted logic]
 
-    //assign flipZs = negz ? ~z[15] : z[15];
-
-    //assign flipZ = negz ? z : {~z[15],z[14:0]}; //<- This works for when negz is asserted...very odd
-    //assign flipZ = {flipZs, z[14:0]};
 
 
 
