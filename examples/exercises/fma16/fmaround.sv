@@ -28,19 +28,12 @@ module fmaround(input logic     [15:0]  product, sum,
 
     logic [15:0]   infP;           // positive infinity value
     logic [15:0]   infN;           // negative infinity value
-    // logic [15:0]   zeroP;          // positive zero
-    // logic [15:0]   zeroN;          // negative zero
-    // logic [15:0]   NaN;            // NaN value
 
     assign sign = sum[15];
     assign maxNum = 'h7bff;
-//     assign zeroP = 'h0000;
-//     assign zeroN = 'h8000;
 
    assign infP = 'h7c00;
    assign infN = 'hfc00;
-
-//    assign NaN  = 'h7e00;
 
     // RNE logic
     assign lsb = fullSum[23];
@@ -64,7 +57,7 @@ module fmaround(input logic     [15:0]  product, sum,
             else    
                 begin rndFloat = sum; takeRound = '0; end
     // RZ 
-        else if (roundmode == 2'b00) 
+        else if (roundmode == 2'b01) 
             if (overFlowFlag & sign) 
                 begin rndFloat = {sign, maxNum}; takeRound = '1; end
             else if (overFlowFlag & ~sign)

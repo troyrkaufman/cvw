@@ -66,7 +66,7 @@ add wave sim:/testbench_fma16/dut/roundunit/nonZeroResults
 #add wave sim:/testbench_fma16/dut/addunit/unsignedZe
 #add wave sim:/testbench_fma16/dut/addunit/unsignedPe
 #add wave sim:/testbench_fma16/dut/addunit/debugSignificance
-#add wave sim:/testbench_fma16/dut/addunit/flipPeFlag
+
 
 add wave sim:/testbench_fma16/dut/addunit/Pm
 add wave sim:/testbench_fma16/dut/addunit/Zm
@@ -74,6 +74,7 @@ add wave sim:/testbench_fma16/dut/addunit/Zm
 
 add wave sim:/testbench_fma16/dut/addunit/Acnt
 add wave sim:/testbench_fma16/dut/addunit/nsig
+add wave sim:/testbench_fma16/dut/addunit/flipPeFlag
 add wave sim:/testbench_fma16/dut/addunit/ZmPreShift
 add wave sim:/testbench_fma16/dut/addunit/ZmShift
 add wave sim:/testbench_fma16/dut/addunit/addType
