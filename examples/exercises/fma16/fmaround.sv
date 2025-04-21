@@ -62,6 +62,8 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 begin rndFloat = infP; takeRound = '1; end
             else if (overFlowFlag & ~sign)
                 begin rndFloat = infN; takeRound = '1; end
+            else if((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))
+                begin rndFloat = sum; takeRound = '1; end
             else if (rndPrime & (lsbPrime | stickyPrime))
                 begin rndFloat = {sign, sum[14:0] + 15'd1}; takeRound = '1; end 
             else    
@@ -112,7 +114,13 @@ endmodule
 
 
 
-
+            // else if (rndPrime & (lsbPrime | stickyPrime) & (sigNum == 2'b01))
+            //     begin rndFloat = product; takeRound = '1; end 
+            // else if (rndPrime & (lsbPrime | stickyPrime) & (sigNum == 2'b10))
+            //     begin rndFloat = z; takeRound = '1; end 
+           // else if ((sigNum==2'b10|sigNum==2'b01)&())
+            // else if (rndPrime & (lsbPrime | stickyPrime))
+            //     begin rndFloat = {sign, sum[14:0] + 15'd1}; takeRound = '1; end 
 
             //else if ((sigNum == 2'b10 | sigNum == 2'b01)& (rndPrime|stickyPrime == '0)) begin rndFloat = {sign, sum[14:10], (fullSum[33:24] - 1'b1)}; takeRound = '1; end
             //else if ((lsbPrime == 'b1) & (sigNum == 2'b10)) 
