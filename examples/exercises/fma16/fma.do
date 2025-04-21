@@ -98,8 +98,8 @@ add wave sim:/testbench_fma16/dut/addunit/nsig
 
 #add wave sim:/testbench_fma16/dut/addunit/multProd
 #add wave sim:/testbench_fma16/dut/addunit/debugMultProd
-#add wave sim:/testbench_fma16/dut/addunit/shiftPm
-#add wave sim:/testbench_fma16/dut/addunit/Am
+add wave sim:/testbench_fma16/dut/addunit/shiftPm
+add wave sim:/testbench_fma16/dut/addunit/Am
 #add wave sim:/testbench_fma16/dut/addunit/Sm 
 
 #add wave sim:/testbench_fma16/dut/addunit/Amshifted

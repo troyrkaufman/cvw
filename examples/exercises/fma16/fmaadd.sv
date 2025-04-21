@@ -54,7 +54,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // product's mantissa
     //assign Pm = {1'b1,product[9:0]};
     assign Pm = fullPm[21] ? {1'b1, fullPm[20:0]} : {1'b1, fullPm[19:0], 1'b0};
-    assign Zm = {1'b1, z[9:0]};
+    assign Zm = (z == 'h0000 | z == 'h8000) ? 'h0 : {1'b1, z[9:0]};
 
     // Z's and product's signs
     assign Zs = z[15];
