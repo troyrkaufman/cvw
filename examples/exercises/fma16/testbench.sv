@@ -6,7 +6,7 @@ module testbench_fma16;
   logic        mul, add, negp, negz;
   logic [1:0]  roundmode;
   logic [31:0] vectornum, errors;
-  logic [75:0] testvectors[1000000:0]; // 
+  logic [75:0] testvectors[100000:0]; // 
   logic [3:0]  flags, flagsexpected; // Invalid, Overflow, Underflow, Inexact
 
   // instantiate device under test
@@ -21,7 +21,7 @@ module testbench_fma16;
   // at start of test, load vectors and pulse reset
   initial
     begin
-      $readmemh("work/fmuladd_2_complete_v2.tv", testvectors);
+      $readmemh("work/fma_special_rz.tv", testvectors);
       vectornum = 0; errors = 0;
       reset = 1; #22; reset = 0;
     end
@@ -36,10 +36,11 @@ module testbench_fma16;
   // check results on falling edge of clk
   always @(negedge clk)
     if (~reset) begin // skip during reset
-      if (result !== rexpected /* | flags !== flagsexpected */) begin  // check result
+      if (result !== rexpected  /*| flags !== flagsexpected*/) begin  // check result
         $display("Error: inputs %h * %h + %h", x, y, z);
         $display("  result = %h (%h expected) flags = %b (%b expected)", 
           result, rexpected, flags, flagsexpected);
+        $display("Other inputs: mul: %b; add: %b; negp %b; negz: %b", mul, add, negp, negz);
         errors = errors + 1;
       end
       vectornum = vectornum + 1;

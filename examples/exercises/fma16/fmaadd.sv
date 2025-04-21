@@ -10,7 +10,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
                 input logic [21:0]  fullPm,
                 input logic         mul, add,
                 output logic [15:0] sum,
-                output logic [33:0] fullSum);
+                output logic [33:0] fullSum, 
+                output logic [1:0]  sigNum);
 
     logic [4:0]     Pe;                 // sum of the product's exponents
     logic [4:0]     Ze;                 // z's exponent
@@ -138,7 +139,10 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         end
     end
 
-    assign fullSum = tempMm;
+    //assign fullSum = tempMm;
+    assign fullSum = checkSm<<ZeroCnt;
+    //assign fullSum = (nsig == 2'b01) ? {Pm, 12'b0} : (nsig == 2'b10) ? Am : checkSm<<ZeroCnt;
+    assign sigNum = nsig;
     // bit swizzle results together
     assign sum = {sign,Me,Mm};
 endmodule

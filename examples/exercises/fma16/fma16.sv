@@ -25,6 +25,7 @@ module fma16(input logic  [15:0]    x, y, z,
     logic           overFlowFlag;
     logic [15:0]    roundedResult;
     logic [21:0]    fullPm;
+    logic [1:0]     sigNum;
 
 
     assign flipZ = negz ? {~z[15],z[14:0]} : z; // something wrong as usual with signage
@@ -34,13 +35,13 @@ module fma16(input logic  [15:0]    x, y, z,
     fmamult multunit(.x(flipX), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .fullPm(fullPm));
 
     // floating point addition 
-    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum));
+    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum), .sigNum(sigNum));
 
     // floating point special scenarios and flags
     specialCases specCase(.x(flipX), .y(y), .z(flipZ), .product(product), .sum(sum), .nonZeroResults(nonZeroResults), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag(overFlowFlag), .flags(flags));
 
     // floating point rounding
-    fmaround roundunit(.product(product), .sum(sum), .fullSum(fullSum), .overFlowFlag(overFlowFlag), .roundmode(roundmode), .rndFloat(roundedResult), .nonZeroResults(nonZeroResults), .takeRound(takeRound));
+    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .sigNum(sigNum), .overFlowFlag(overFlowFlag), .mul(mul), .add(add), .roundmode(roundmode), .rndFloat(roundedResult), .nonZeroResults(nonZeroResults), .takeRound(takeRound));
 
     //assign result = specialCaseFlag ? specialResult : sum;  
 
