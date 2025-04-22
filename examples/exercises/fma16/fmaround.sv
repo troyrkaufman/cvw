@@ -7,11 +7,11 @@
 module fmaround(input logic     [15:0]  product, z, sum,
                 input logic     [21:0]  fullPm,
                 input logic     [33:0]  fullSum,
-                input logic     [1:0]   sigNum,
+                input logic     [1:0]   nSigFlag,
                 input logic             overFlowFlag, mul, add, 
                 input logic     [1:0]   roundmode,
                 output logic    [15:0]  roundResult,
-                output logic            nonZeroResults, roundFlag);
+                output logic            nonZeroMantFlag, roundFlag);
 
     logic sign;
     logic lsb;
@@ -61,7 +61,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 begin roundResult = infP; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
                 begin roundResult = infN; roundFlag = '1; end
-            else if((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))
+            else if((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))
                 begin roundResult = sum; roundFlag = '1; end
             else if (rndPrime & (lsbPrime | stickyPrime))
                 begin roundResult = {sign, sum[14:0] + 15'd1}; roundFlag = '1; end 
@@ -73,7 +73,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
                 begin roundResult = infP; roundFlag = '1; end
-            else if ((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
+            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             else 
             begin roundResult = 'h0; roundFlag = 0; end
     // RP
@@ -82,7 +82,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
                 begin roundResult = infP; roundFlag = '1; end
-            else if ((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
+            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
                 if (~sign)  begin roundResult = sum; roundFlag = '0; end
                 else begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             else if (~overFlowFlag & ~sign & (product!=zeroN&product!=zeroP))
@@ -99,7 +99,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 begin roundResult = infN; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
-            else if ((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
+            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
                 if (sign)  begin roundResult = sum; roundFlag = '0; end
                 else begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             else if (~overFlowFlag & sign)
@@ -113,7 +113,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
             begin roundResult = sum; roundFlag = '0; end
     end
 
-    assign nonZeroResults = rndPrime | stickyPrime; 
+    assign nonZeroMantFlag = rndPrime | stickyPrime; 
 endmodule
 
 

@@ -5,7 +5,7 @@
  // Purpose: Half Precision floating point module that handles special cases
 
  module specialCases(	input logic 	[15:0] 	x, y, z, product, sum,
-                      	input logic 			nonZeroResults,
+                      	input logic 			nonZeroMantFlag,
                 		output logic 	[15:0] 	result,
                 		output logic        	specialCaseFlag, overFlowFlag,
 						output logic 	[3:0]	flags);
@@ -35,7 +35,7 @@
 	assign anyNaN = checkXNaN | checkYNaN | checkZNaN;
 
 	// ineXact flag depends on guard, round, or sticky bits or overflow flag
-	assign inXFlag = (~inVFlag) ? nonZeroResults | oFFlag : '0;
+	assign inXFlag = (~inVFlag) ? nonZeroMantFlag | oFFlag : '0;
 
 	assign zeroP = 'h0000;
 	assign zeroN = 'h8000;

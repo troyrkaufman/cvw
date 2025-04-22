@@ -16,46 +16,51 @@ module fma16(input logic  [15:0]    x, y, z,
     logic [15:0]    product;            // output from floating point multiplication module
     logic [15:0]    sum;                // output from floating point addition module
     logic [15:0]    flipZ;              // flip Z's sign if negz is asserted
+    logic [15:0]    flipY;              // sets the value of Y to either the input Y or a hard coded value
     logic [15:0]    flipX;              // flip X's sign if negp is asserted
     logic           specialCaseFlag;    // determines if special case was carried out
     logic           roundFlag;          // determines if rounding was carried out
     logic [15:0]    specialResult;      // result from a special case
-    logic [33:0]    fullSum;
-    logic           nonZeroResults;
-    logic           overFlowFlag;
-    logic [15:0]    roundResult;
-    logic [21:0]    fullPm;
-    logic [1:0]     sigNum;
-    logic           multOp;
-    logic           addOp;
-    logic           mulAddOp;
+    logic [33:0]    fullSum;            // properly normalized sum to be used in the rounding logic
+    logic           nonZeroMantFlag;    // determines if there are 1s in the round or sticky bits of fullSum
+    logic           overFlowFlag;       // determines if an overflow has occured
+    logic [15:0]    roundResult;        // output from the floating point rounding module
+    logic [21:0]    fullPm;             // the unaltered product mantissa
+    logic [1:0]     nSigFlag;           // determines if either the product or Z are insignificant when it comes to the sum 
+    logic           multOp;             // multiplication operation authorized
+    logic           addOp;              // addition operation authorized
+    logic           mulAddOp;           // fma operation authorized
 
+    // identify which operation is authorized
     assign multOp = (mul&~add) ? '1 : '0; 
     assign addOp  = (~mul&add) ? '1 : '0;
     assign mulAddOp = (mul&add) ? '1 : '0;
 
+    // identify which inputs are hard coded to values and/or have their signs flipped based on the operation
     always_comb begin : defineOperation
-        if      (multOp)    begin flipX = negp ? {~x[15],x[14:0]} : x; flipZ = negz ? 16'h8000 : 16'h0000;   end
-        else if (addOp)     begin flipX = negp ? 16'h8c00 : 16'h3c00;  flipZ = negz ? {~z[15],z[14:0]} : z;  end
-        else if (mulAddOp)  begin flipX = negp ? {~x[15],x[14:0]} : x; flipZ = negz ? {~z[15],z[14:0]} : z;  end
-        else                begin flipX = 16'h0; flipZ = 16'h0; end
+        if      (multOp)    begin flipX = negp ? {~x[15],x[14:0]} : x; flipY = y;       flipZ = negz ? 16'h8000 : 16'h0000;   end
+        else if (addOp)     begin flipX = negp ? 16'h8c00 : 16'h3c00;  flipY = 16'h1;   flipZ = negz ? {~z[15],z[14:0]} : z;  end
+        else if (mulAddOp)  begin flipX = negp ? {~x[15],x[14:0]} : x; flipY = y;       flipZ = negz ? {~z[15],z[14:0]} : z;  end
+        else                begin flipX = 16'h0; flipY = y; flipZ = 16'h0; end
     end
 
     // floating point multiplication module
-    fmamult multunit(.x(flipX), .y(y), .negp(negp), .roundmode(roundmode),.product(product), .fullPm(fullPm));
+    fmamult multunit(.x(flipX), .y(flipY), .negp(negp), .roundmode(roundmode),.product(product), .fullPm(fullPm));
 
     // floating point addition module
-    fmaadd addunit(.product(product), .x(flipX), .y(y), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum), .sigNum(sigNum));
+    fmaadd addunit(.product(product), .x(flipX), .y(flipY), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum), .nSigFlag(nSigFlag));
 
     // floating point special scenarios and flags module
-    specialCases specCase(.x(flipX), .y(y), .z(flipZ), .product(product), .sum(sum), .nonZeroResults(nonZeroResults), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag(overFlowFlag), .flags(flags));
+    specialCases specCase(.x(flipX), .y(flipY), .z(flipZ), .product(product), .sum(sum), .nonZeroMantFlag(nonZeroMantFlag), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag(overFlowFlag), .flags(flags));
 
     // floating point rounding module
-    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .sigNum(sigNum), .overFlowFlag(overFlowFlag), .mul(mul), .add(add), .roundmode(roundmode), .roundResult(roundResult), .nonZeroResults(nonZeroResults), .roundFlag(roundFlag));
+    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .nSigFlag(nSigFlag), .overFlowFlag(overFlowFlag), .mul(mul), .add(add), .roundmode(roundmode), .roundResult(roundResult), .nonZeroMantFlag(nonZeroMantFlag), .roundFlag(roundFlag));
 
-    // Choose which result to output based on special and rounding flags
+    // Choose which result to output based on special, operation, and rounding flags
     always_comb begin : finalResult
         if (specialCaseFlag)    result = specialResult;
+        else if (multOp)        result = product;
+        else if (addOp)         result = sum;
         else if (roundFlag)     result = roundResult;
         else                    result = sum;
     end
