@@ -17,7 +17,7 @@
 	logic [15:0]   NaN;            // NaN value
 	logic [1:0]    of;             // overflow flag variants
 
-	logic           uFFlag;
+	//logic           uFFlag;
 	logic           oFFlag;
 	logic           inXFlag;
 	logic           inVFlag;
@@ -53,7 +53,7 @@
 	end
 
 	// underflow product logic
-	assign uFFlag = ($signed(x[14:10] + y[14:10] -'d15) <= 0) & inXFlag;
+	//assign uFFlag = ($signed(x[14:10] + y[14:10] -'d15) <= 0) & inXFlag;
 
    	always_comb begin : checkSpecialCases
 		// check for NaN input
@@ -66,11 +66,13 @@
 		else if ((product == infP) & (z == infN) || (product == infN) & (z == infP)) begin result = NaN; inVFlag = '1;specialCaseFlag = '1; end
 		
 		// check overflow flag
-		else if (of == 2'b01) begin result = (product[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
-		else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end 
+		else if (oFFlag) //begin result = (product[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
+			if (product[15]^z[15]) 	begin result = '0; inVFlag = '0; specialCaseFlag = '0; end
+			else 					begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
+		//else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end 
 
 		// check underflow flag
-		else if(uFFlag) begin result = z; inVFlag = '0; specialCaseFlag = 'b1; end
+		//else if(uFFlag) begin result = z; inVFlag = '0; specialCaseFlag = 'b1; end
 
 		// at least one of the inputs are inf
 		else if ((x == infP | y == infP) & (x[15] ^ y[15])) begin result = infN; inVFlag = '0;specialCaseFlag = '1; end

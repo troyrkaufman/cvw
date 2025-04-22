@@ -28,8 +28,8 @@ module fmamult( input logic   [15:0]      x, y,
         multMant = {1'b1, x[9:0]} * {1'b1, y[9:0]};
         
         // normalize mantissa product
-        if (multMant[21] == 1)  begin shiftMant = multMant[20:11]; exp = $unsigned(({1'b0,x[14:10]} + {1'b0,y[14:10]}) - 5'd15 + 5'd1); end
-        else                    begin shiftMant = multMant[19:10]; exp = $unsigned(({1'b0,x[14:10]} + {1'b0,y[14:10]}) - 5'd15); end
+        if (multMant[21] == 1)  begin shiftMant = multMant[20:11]; exp = ({1'b0,x[14:10]} + {1'b0,y[14:10]}) - 5'd15 + 5'd1; end
+        else                    begin shiftMant = multMant[19:10]; exp = ({1'b0,x[14:10]} + {1'b0,y[14:10]}) - 5'd15; end
 
         // check if exp is greater than or equal to 'd31 
         checkExpFlag = (exp >= 'd31) ? '1 : '0; 

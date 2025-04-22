@@ -123,7 +123,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         ZeroCnt = i[$clog2(35)-1:0];
     end
 
-    // normalizes mantissa and exponent post summation. The insignificant flags describe whether we had to kill the product or addend which becomes a crucial input for the rounding logic. 
+    // normalize mantissa and exponent post summation. The insignificant flags describe whether we had to kill the product or addend which becomes a crucial input for the rounding logic. 
     // The default branch of the conditional checks if the addition was calculated to a value above two. Hence the exponent is incemented by one and the mantissa is shifted according to 
     // the number of leading zeros found in the LZC. The other half of this branch shifts the mantissa as before with the LZC but checks if the product's mantissa was shifted for pre sum
     // normalization. If so, the exponent difference between the product and addend is included in the sum's exponent calculation and exlcuded if the flag was set low. 

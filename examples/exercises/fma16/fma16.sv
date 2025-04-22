@@ -39,7 +39,7 @@ module fma16(input logic  [15:0]    x, y, z,
     // identify which inputs are hard coded to values and/or have their signs flipped based on the operation
     always_comb begin : defineOperation
         if      (multOp)    begin flipX = negp ? {~x[15],x[14:0]} : x; flipY = y;       flipZ = negz ? 16'h8000 : 16'h0000;   end
-        else if (addOp)     begin flipX = negp ? 16'h8c00 : 16'h3c00;  flipY = 16'h1;   flipZ = negz ? {~z[15],z[14:0]} : z;  end
+        else if (addOp)     begin flipX = negp ? {~x[15],x[14:0]} : x;  flipY = 16'h3c00;   flipZ = negz ? {~z[15],z[14:0]} : z;  end
         else if (mulAddOp)  begin flipX = negp ? {~x[15],x[14:0]} : x; flipY = y;       flipZ = negz ? {~z[15],z[14:0]} : z;  end
         else                begin flipX = 16'h0; flipY = y; flipZ = 16'h0; end
     end
@@ -54,7 +54,7 @@ module fma16(input logic  [15:0]    x, y, z,
     specialCases specCase(.x(flipX), .y(flipY), .z(flipZ), .product(product), .sum(sum), .nonZeroMantFlag(nonZeroMantFlag), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag(overFlowFlag), .flags(flags));
 
     // floating point rounding module
-    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .nSigFlag(nSigFlag), .overFlowFlag(overFlowFlag), .mul(mul), .add(add), .roundmode(roundmode), .roundResult(roundResult), .nonZeroMantFlag(nonZeroMantFlag), .roundFlag(roundFlag));
+    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .nSigFlag(nSigFlag), .overFlowFlag(overFlowFlag), .multOp(multOp), .addOp(addOp), .roundmode(roundmode), .roundResult(roundResult), .nonZeroMantFlag(nonZeroMantFlag), .roundFlag(roundFlag));
 
     // Choose which result to output based on special, operation, and rounding flags
     always_comb begin : finalResult

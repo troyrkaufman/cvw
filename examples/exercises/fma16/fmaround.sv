@@ -8,7 +8,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 input logic     [21:0]  fullPm,
                 input logic     [33:0]  fullSum,
                 input logic     [1:0]   nSigFlag,
-                input logic             overFlowFlag, mul, add, 
+                input logic             overFlowFlag, multOp, addOp, 
                 input logic     [1:0]   roundmode,
                 output logic    [15:0]  roundResult,
                 output logic            nonZeroMantFlag, roundFlag);
@@ -86,8 +86,12 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 if (~sign)  begin roundResult = sum; roundFlag = '0; end
                 else begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             else if (~overFlowFlag & ~sign & (product!=zeroN&product!=zeroP))
-                if (rndPrime | stickyPrime)
+                // if (rndPrime | stickyPrime)
+                //     begin roundResult = {sign, sum[14:0] + 15'd1}; roundFlag = '1; end
+                if ((rndPrime | stickyPrime) & addOp)
                     begin roundResult = {sign, sum[14:0] + 15'd1}; roundFlag = '1; end
+                else if ((rndPrime | stickyPrime) & multOp)
+                    begin roundResult = {sign, product[14:0] + 15'd1}; roundFlag = '1; end
                 else 
                     begin roundResult = sum; roundFlag = '0; end
             
