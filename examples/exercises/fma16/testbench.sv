@@ -21,7 +21,7 @@ module testbench_fma16;
   // at start of test, load vectors and pulse reset
   initial
     begin
-      $readmemh("work/fma_special_rz.tv", testvectors);
+      $readmemh("work/baby_torture.tv", testvectors);
       vectornum = 0; errors = 0;
       reset = 1; #22; reset = 0;
     end
@@ -40,7 +40,7 @@ module testbench_fma16;
         $display("Error: inputs %h * %h + %h", x, y, z);
         $display("  result = %h (%h expected) flags = %b (%b expected)", 
           result, rexpected, flags, flagsexpected);
-        $display("Other inputs: mul: %b; add: %b; negp %b; negz: %b", mul, add, negp, negz);
+        $display("Other inputs: mul: %b; add: %b; negp %b; negz: %b; roundmode: %b", mul, add, negp, negz, roundmode);
         errors = errors + 1;
       end
       vectornum = vectornum + 1;

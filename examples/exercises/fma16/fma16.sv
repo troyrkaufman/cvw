@@ -59,9 +59,9 @@ module fma16(input logic  [15:0]    x, y, z,
     // Choose which result to output based on special, operation, and rounding flags
     always_comb begin : finalResult
         if (specialCaseFlag)    result = specialResult;
+        else if (roundFlag)     result = roundResult;
         else if (multOp)        result = product;
         else if (addOp)         result = sum;
-        else if (roundFlag)     result = roundResult;
         else                    result = sum;
     end
 endmodule

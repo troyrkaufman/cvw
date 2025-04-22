@@ -56,7 +56,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
         
     always_comb begin : rounding
     // RNE
-        if (roundmode == 2'b00)
+        if (roundmode == 2'b01)
             if (overFlowFlag & sign)
                 begin roundResult = infP; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
@@ -68,7 +68,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
             else    
                 begin roundResult = sum; roundFlag = '0; end
     // RZ 
-        else if (roundmode == 2'b01) 
+        else if (roundmode == 2'b00) 
             if (overFlowFlag & sign) 
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)

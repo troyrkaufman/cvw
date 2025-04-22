@@ -47,8 +47,9 @@
 
 	// overflow logic depends on if either the product's or sum's exponent becomes 'h1f
 	always_comb begin : overFlowLogic
+		// if ((sum[14:10]==5'h1f)|(product[14:10]==5'h1f)) 	begin 	of = 2'b01; oFFlag = 'b1; end
 		if (sum[14:10]==5'h1f) 	begin 	of = 2'b01; oFFlag = 'b1; end
-		else 						begin	of = 2'b00; oFFlag = 'b0; end 
+		else 					begin	of = 2'b00; oFFlag = 'b0; end 
 	end
 
 	// underflow product logic
@@ -79,7 +80,7 @@
 		else                                              begin result = sum; inVFlag = '0; specialCaseFlag = '0; end
    end
 
-	assign flags = {inVFlag, oFFlag, uFFlag, inXFlag};
+	assign flags = {inVFlag, oFFlag, 1'b0, inXFlag};
 	assign overFlowFlag = oFFlag;
  endmodule
 
