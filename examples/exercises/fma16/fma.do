@@ -58,7 +58,7 @@ add wave sim:/testbench_fma16/dut/specCase/nonZeroResults
 add wave sim:/testbench_fma16/dut/specCase/of
 
 # fmaround signals
-add wave sim:/testbench_fma16/dut/roundunit/takeRound
+add wave sim:/testbench_fma16/dut/roundunit/roundFlag
 add wave sim:/testbench_fma16/dut/roundunit/lsb
 add wave sim:/testbench_fma16/dut/roundunit/lsbPrime
 add wave sim:/testbench_fma16/dut/roundunit/guard
@@ -66,7 +66,7 @@ add wave sim:/testbench_fma16/dut/roundunit/rndPrime
 add wave sim:/testbench_fma16/dut/roundunit/rnd
 add wave sim:/testbench_fma16/dut/roundunit/sticky
 add wave sim:/testbench_fma16/dut/roundunit/stickyPrime 
-add wave sim:/testbench_fma16/dut/roundunit/rndFloat
+add wave sim:/testbench_fma16/dut/roundunit/roundResult
 add wave sim:/testbench_fma16/dut/roundunit/nonZeroResults
 
 

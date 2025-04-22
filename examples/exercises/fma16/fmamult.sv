@@ -9,7 +9,7 @@ module fmamult( input logic   [15:0]      x, y,
                 input logic               negp,
                 input logic   [1:0]       roundmode,
                 output logic  [15:0]      product,
-                output logic    [21:0]      fullPm);
+                output logic  [21:0]      fullPm);
 
 logic           sign;           // product's sign
 logic [4:0]     exp;            // product's exponent
@@ -18,8 +18,6 @@ logic [9:0]     shiftmant;      // extracts the proper upper bits from multmant
 logic           zeroInputFlag;  // flag that determines if either input is +/- 0
 
 assign zeroInputFlag = ((x[14:0] == 15'h0) | (y[14:0] == 15'h0));
-
-//assign flags = 4'b0;
 
 always_comb begin : fpMult
     // Multiply the mantissas with the implicit 1 as a prefix
@@ -45,19 +43,3 @@ end
 
 assign fullPm = multmant;
 endmodule
-
-
-    
-    //signedExp = $signed(exp);
-   
-    // bit swizzle the components together
-    //product = {sign, exp, shiftmant};
-
-        //assign signedExp = $signed(exp);
-    //assign productUnderflowFlag = (signedExp <= 0) ? 'b1 : 'b0;
-
-
-    //tempSign = x[15] ^ y[15];
-    //tempSign = negp ? ~x[15] : x[15];
-    //sign = tempSign ^ y[15];
-    //sign = negp ? tempSign : ~tempSign;

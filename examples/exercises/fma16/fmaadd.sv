@@ -19,7 +19,6 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     logic           Zs;                 // Z's sign bit
     logic           Ps;                 // product's sign
     logic [10:0]    Zm;                 // Z's mantissa with prepended 1
-    //logic [10:0]    Pm;                 // product's mantissa with prepended 1
     logic [21:0]    Pm;
     logic [33:0]    Am;                 // Z's aligned mantissa
     logic [33:0]    Sm;                 // sum of aligned significands
@@ -52,7 +51,6 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     assign Ze = z[14:10];
 
     // product's mantissa
-    //assign Pm = {1'b1,product[9:0]};
     assign Pm = fullPm[21] ? {1'b1, fullPm[20:0]} : {1'b1, fullPm[19:0], 1'b0};
     assign Zm = (z == 'h0000 | z == 'h8000) ? 'h0 : {1'b1, z[9:0]};
 
@@ -69,8 +67,6 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         if (compExpFlag) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
         else             begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
         ZmPreShift = {Zm, 12'b0}; 
-        // if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 22'b0} >> Acnt; ZmShift = {ZmPreShift, 21'b0}; end
-        // else begin              shiftPm = {1'b0, Pm, 22'b0}; ZmShift = {ZmPreShift, 21'b0} >> Acnt; end
         if (shiftPmFlag) begin  shiftPm = {1'b0, Pm, 11'b0} >> (Acnt); ZmShift = {ZmPreShift, 21'b0}; end
         else begin              shiftPm = {1'b0, Pm, 11'b0}; ZmShift = {ZmPreShift, 21'b0} >> (Acnt); end
         Am = ZmShift[43:10];
@@ -79,11 +75,10 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // Check for unecessary addition then assign the nsig flag a specific value to tell the program that either
     // the product dominates (transmit product), Z dominates (transmit addend), or neither dominates and perform normal floating point addition.
     always_comb begin : checkSignificance
-        if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) > 11) && ~flipPeFlag)          nsig = 2'b01;  
-        //else if (($unsigned(Ze) > $unsigned(Pe)) && (($unsigned(Ze) - $unsigned(Pe)) > 12) && ~flipPeFlag)     nsig = 2'b10; // does this even contribute to anything?
-        else if (($unsigned(Ze) > (~Pe + 1'b1)) && (($unsigned(Ze) - (~Pe + 1)) > 11) && flipPeFlag)           nsig = 2'b10;
-        else if ((Ze < Pe) && (Ze - Pe < -'d11))   nsig = 2'b10;
-        else                                                                                                    nsig = 2'b00;
+        if (($unsigned(Pe) > $unsigned(Ze)) && (($unsigned(Pe) - $unsigned(Ze)) > 11) && ~flipPeFlag)   nsig = 2'b01;  
+        else if (($unsigned(Ze) > (~Pe + 1'b1)) && (($unsigned(Ze) - (~Pe + 1)) > 11) && flipPeFlag)    nsig = 2'b10;
+        else if ((Ze < Pe) && (Ze - Pe < -'d11))                                                        nsig = 2'b10;
+        else                                                                                            nsig = 2'b00;
     end
 
     // compute mantissa's magnitude
@@ -139,28 +134,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         end
     end
 
-    //assign fullSum = tempMm;
     assign fullSum = checkSm<<ZeroCnt;
-    //assign fullSum = (nsig == 2'b01) ? {Pm, 12'b0} : (nsig == 2'b10) ? Am : checkSm<<ZeroCnt;
     assign sigNum = nsig;
     // bit swizzle results together
     assign sum = {sign,Me,Mm};
 endmodule
-
-
-
-
-
-
-
-// assign debugAm = ((-Am)>>1);
-// assign debugPm = (~shiftPm + 1'b1);
-
-// logic [4:0] debugSignificance;
-// logic [4:0] signedPe, signedZe;
-// logic [4:0] unsignedPe, unsignedZe;
-// assign debugSignificance = $unsigned(Ze) + $signed(Pe);
-// assign signedPe = $signed(Pe);
-// assign signedZe = $signed(Ze);
-// assign unsignedPe = $unsigned(Pe);
-// assign unsignedZe = $unsigned(Ze);

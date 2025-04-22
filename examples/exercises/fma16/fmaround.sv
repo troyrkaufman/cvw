@@ -10,8 +10,8 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 input logic     [1:0]   sigNum,
                 input logic             overFlowFlag, mul, add, 
                 input logic     [1:0]   roundmode,
-                output logic    [15:0]  rndFloat,
-                output logic            nonZeroResults, takeRound);
+                output logic    [15:0]  roundResult,
+                output logic            nonZeroResults, roundFlag);
 
     logic sign;
     logic lsb;
@@ -37,13 +37,12 @@ module fmaround(input logic     [15:0]  product, z, sum,
 
     assign zeroP = 'h0000;
 	assign zeroN = 'h8000;
-    //assign zeros = zeroP | zeroN;
 
     assign sign = sum[15];
     assign maxNum = 'h7bff;
 
-   assign infP = 'h7c00;
-   assign infN = 'hfc00;
+    assign infP = 'h7c00;
+    assign infN = 'hfc00;
 
     // RNE logic
     assign lsb = fullSum[23];
@@ -59,56 +58,59 @@ module fmaround(input logic     [15:0]  product, z, sum,
     // RNE
         if (roundmode == 2'b00)
             if (overFlowFlag & sign)
-                begin rndFloat = infP; takeRound = '1; end
+                begin roundResult = infP; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
-                begin rndFloat = infN; takeRound = '1; end
+                begin roundResult = infN; roundFlag = '1; end
             else if((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))
-                begin rndFloat = sum; takeRound = '1; end
+                begin roundResult = sum; roundFlag = '1; end
             else if (rndPrime & (lsbPrime | stickyPrime))
-                begin rndFloat = {sign, sum[14:0] + 15'd1}; takeRound = '1; end 
+                begin roundResult = {sign, sum[14:0] + 15'd1}; roundFlag = '1; end 
             else    
-                begin rndFloat = sum; takeRound = '0; end
+                begin roundResult = sum; roundFlag = '0; end
     // RZ 
         else if (roundmode == 2'b01) 
             if (overFlowFlag & sign) 
-                begin rndFloat = {sign, maxNum}; takeRound = '1; end
+                begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
-                begin rndFloat = infP; takeRound = '1; end
-            else if ((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP)) begin rndFloat = {sign, (sum[14:0] - 15'b1)}; takeRound = '1;end
+                begin roundResult = infP; roundFlag = '1; end
+            else if ((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             else 
-            begin rndFloat = 'h0; takeRound = 0; end
+            begin roundResult = 'h0; roundFlag = 0; end
     // RP
         else if (roundmode == 2'b11) 
             if (overFlowFlag & sign)
-                begin rndFloat = {sign, maxNum}; takeRound = '1; end
+                begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
-                begin rndFloat = infP; takeRound = '1; end
+                begin roundResult = infP; roundFlag = '1; end
             else if ((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
-                if (~sign)  begin rndFloat = sum; takeRound = '0; end
-                else begin rndFloat = {sign, (sum[14:0] - 15'b1)}; takeRound = '1;end
+                if (~sign)  begin roundResult = sum; roundFlag = '0; end
+                else begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             else if (~overFlowFlag & ~sign & (product!=zeroN&product!=zeroP))
                 if (rndPrime | stickyPrime)
-                    begin rndFloat = {sign, sum[14:0] + 15'd1}; takeRound = '1; end
+                    begin roundResult = {sign, sum[14:0] + 15'd1}; roundFlag = '1; end
                 else 
-                    begin rndFloat = sum; takeRound = '0; end
+                    begin roundResult = sum; roundFlag = '0; end
             
             else
-                begin rndFloat = sum; takeRound = '0; end
+                begin roundResult = sum; roundFlag = '0; end
     // RN
         else if (roundmode == 2'b10)
             if (overFlowFlag & sign)
-                begin rndFloat = infN; takeRound = '1; end
+                begin roundResult = infN; roundFlag = '1; end
             else if (overFlowFlag & ~sign)
-                begin rndFloat = {sign, maxNum}; takeRound = '1; end
-            else if (sign)
+                begin roundResult = {sign, maxNum}; roundFlag = '1; end
+            else if ((product[15]^z[15])&(sigNum==2'b10|sigNum==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
+                if (sign)  begin roundResult = sum; roundFlag = '0; end
+                else begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
+            else if (~overFlowFlag & sign)
                 if (rndPrime | stickyPrime)
-                    begin rndFloat = {sign, sum[14:0] + 15'd1}; takeRound = '1; end
+                    begin roundResult = {sign, sum[14:0] + 15'd1}; roundFlag = '1; end
                 else 
-                    begin rndFloat = sum; takeRound = '0; end
+                    begin roundResult = sum; roundFlag = '0; end
             else
-                begin rndFloat = sum; takeRound = '0; end
+                begin roundResult = sum; roundFlag = '0; end
         else 
-            begin rndFloat = sum; takeRound = '0; end
+            begin roundResult = sum; roundFlag = '0; end
     end
 
     assign nonZeroResults = rndPrime | stickyPrime; 

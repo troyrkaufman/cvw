@@ -22,7 +22,6 @@
 	logic           inXFlag;
 	logic           inVFlag;
 
-	//logic [1:0]    uf;             // underflow flag variants
 	logic          checkXNaN;      // checks if X is NaN
 	logic          checkYNaN;      // checks if Y is NaN
 	logic          checkZNaN;      // checks if Z is NaN
@@ -47,10 +46,7 @@
 	assign NaN  = 'h7e00;
 
 	// overflow logic depends on if either the product's or sum's exponent becomes 'h1f
-	//assign of = (product[14:10]==5'h1f) ? 2'b01 : (sum[14:10]==5'h1f) ? 2'b10 : 2'b00; 
 	always_comb begin : overFlowLogic
-		// if (product[14:10]==5'h1f) 	begin 	of = 2'b01; oFFlag = 'b1; end
-		// else if (sum[14:10]==5'h1f) begin 	of = 2'b10; oFFlag = 'b1; end
 		if (sum[14:10]==5'h1f) 	begin 	of = 2'b01; oFFlag = 'b1; end
 		else 						begin	of = 2'b00; oFFlag = 'b0; end 
 	end
