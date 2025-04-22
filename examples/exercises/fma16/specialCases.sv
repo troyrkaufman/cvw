@@ -2,7 +2,7 @@
  // Troy Kaufman
  // tkaufman@g.hmc.edu
  // 4/13/25
- // Purpose: Half Precision floating point module that handles special cases
+ // Purpose: Half Precision floating point module that handles special cases and flags
 
  module specialCases(	input logic 	[15:0] 	x, y, z, product, sum,
                       	input logic 			nonZeroMantFlag,
