@@ -15,46 +15,41 @@
 	logic [15:0]   zeroP;          // positive zero
 	logic [15:0]   zeroN;          // negative zero
 	logic [15:0]   NaN;            // NaN value
-	logic [1:0]    of;             // overflow flag variants
 
-	//logic           uFFlag;
-	logic           oFFlag;
-	logic           inXFlag;
-	logic           inVFlag;
+	logic          oFFlag;			// overflow flag
+	logic          inXFlag;			// inexact flag
+	logic          inVFlag;			// invalid flag
 
-	logic          checkXNaN;      // checks if X is NaN
-	logic          checkYNaN;      // checks if Y is NaN
-	logic          checkZNaN;      // checks if Z is NaN
+	logic          checkXNaN;      	// checks if X is NaN
+	logic          checkYNaN;     	// checks if Y is NaN
+	logic          checkZNaN;      	// checks if Z is NaN
 	logic          anyNaN;          // checks if any inputs are NaN
-	logic          underFlowFlag;  // checks if the product produces an underflow
 
+	// check if any input is NaN
 	assign checkXNaN = (x[14:10] == 5'h1f) & (x[9:0] != 10'h000);
 	assign checkYNaN = (y[14:10] == 5'h1f) & (y[9:0] != 10'h000);
 	assign checkZNaN = (z[14:10] == 5'h1f) & (z[9:0] != 10'h000);
 
+	// create a bit signal describing if one of the inputs was NaN
 	assign anyNaN = checkXNaN | checkYNaN | checkZNaN;
 
 	// ineXact flag depends on guard, round, or sticky bits or overflow flag
 	assign inXFlag = (~inVFlag) ? nonZeroMantFlag | oFFlag : '0;
 
+	// general 16 bit values that will be used throughout the program
 	assign zeroP = 'h0000;
 	assign zeroN = 'h8000;
-
 	assign infP = 'h7c00;
 	assign infN = 'hfc00;
-
 	assign NaN  = 'h7e00;
 
-	// overflow logic depends on if either the product's or sum's exponent becomes 'h1f
+	// overflow logic depends on if sum's exponent becomes 'h1f
 	always_comb begin : overFlowLogic
-		// if ((sum[14:10]==5'h1f)|(product[14:10]==5'h1f)) 	begin 	of = 2'b01; oFFlag = 'b1; end
-		if (sum[14:10]==5'h1f) 	begin 	of = 2'b01; oFFlag = 'b1; end
-		else 					begin	of = 2'b00; oFFlag = 'b0; end 
+		if (sum[14:10]==5'h1f)	oFFlag = 'b1; 
+		else 					oFFlag = 'b0; 
 	end
 
-	// underflow product logic
-	//assign uFFlag = ($signed(x[14:10] + y[14:10] -'d15) <= 0) & inXFlag;
-
+	// checks for NaN and infinity cases and outputs the result, invalid flag, and if there was a special case found
    	always_comb begin : checkSpecialCases
 		// check for NaN input
 		if (anyNaN) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
@@ -66,13 +61,9 @@
 		else if ((product == infP) & (z == infN) || (product == infN) & (z == infP)) begin result = NaN; inVFlag = '1;specialCaseFlag = '1; end
 		
 		// check overflow flag
-		else if (oFFlag) //begin result = (product[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
+		else if (oFFlag) 
 			if (product[15]^z[15]) 	begin result = '0; inVFlag = '0; specialCaseFlag = '0; end
 			else 					begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
-		//else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end 
-
-		// check underflow flag
-		//else if(uFFlag) begin result = z; inVFlag = '0; specialCaseFlag = 'b1; end
 
 		// at least one of the inputs are inf
 		else if ((x == infP | y == infP) & (x[15] ^ y[15])) begin result = infN; inVFlag = '0;specialCaseFlag = '1; end
@@ -82,37 +73,12 @@
 		else                                              begin result = sum; inVFlag = '0; specialCaseFlag = '0; end
    end
 
+	// outputs the flags
 	assign flags = {inVFlag, oFFlag, 1'b0, inXFlag};
+
+	// for readability purposes let's assign directly output the overflow flag
 	assign overFlowFlag = oFFlag;
  endmodule
-
-
-
-
-  //  always_comb begin : checkSpecialCases
-  //   // check for NaN input
-  //   if (anyNaN) begin result = NaN; specialCaseFlag = '1; end
-
-  //   // NaN indeterminate multiplication
-  //   else if (((x == (zeroP|zeroN))&(y == (infP|infN))||(((x == (infP|infN))&(y == (zeroP|zeroN)))))) begin result = NaN; specialCaseFlag = '1; end
-
-  //   // NaN indeterminate subtraction
-  //   else if ((product == infP) & (z == infN) || (product == infN) & (z == infP)) begin result = NaN; specialCaseFlag = '1; end
-    
-  //   // check overflow flag
-  //   else if (of == 2'b01) begin result = (product[15]) ? infN : infP; specialCaseFlag = '1; end
-  //   else if (of == 2'b10) begin result = (sum[15]) ? infN : infP; specialCaseFlag = '1; end 
-
-  //   // check underflow flag
-  //   else if(underFlowFlag) begin result = z; specialCaseFlag = 'b1; end
-
-  //   // at least one of the inputs are inf
-  //   else if ((x == infP | y == infP) & (x[15] ^ y[15])) begin result = infN; specialCaseFlag = '1; end
-  //   else if ((x == infP | y == infP) & (x[15] ~^ y[15])) begin result = infP; specialCaseFlag = '1; end
-  //   else if ((x == infN | y == infN) & (x[15] ^ y[15])) begin result = infN; specialCaseFlag = '1; end
-  //   else if ((x == infN | y == infN) & (x[15] ~^ y[15])) begin result = infP; specialCaseFlag = '1; end
-  //   else                                              begin result = sum; specialCaseFlag = '0; end
-  //  end
 
 
 

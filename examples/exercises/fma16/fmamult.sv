@@ -12,7 +12,7 @@ module fmamult( input logic   [15:0]      x, y,
                 output logic  [21:0]      fullPm);
 
     logic           sign;           // product's sign
-    logic           checkExpFlag;
+    logic           checkExpFlag;   // check for an exponent overflow in a 5 bit number
     logic [5:0]     exp;            // product's exponent
     logic [21:0]    multMant;       // the factor's mantissa product
     logic [9:0]     shiftMant;      // extracts the proper upper bits from multMant
@@ -37,9 +37,7 @@ module fmamult( input logic   [15:0]      x, y,
         // calculate the number's sign
         sign = x[15] ^ y[15];
 
-        // output product calculation
-        //product = (zeroInputFlag) ? 16'h0 : {sign, exp, shiftMant};
-
+        // output product calculation depending on if an overflow in the exponent occurs and/or the product is negative. Also check if the inputs were zero. 
         if (checkExpFlag&sign)          product = 16'hfc00;
         else if (checkExpFlag&~sign)    product = 16'h7c00;
         else if (zeroInputFlag)         product = 16'h0;

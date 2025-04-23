@@ -44,7 +44,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         else            Pe = x[14:10] + y[14:10] - 4'd15; 
 
         // produces a flag that determines if the sum of the factors' exponents are less than 15 which will be used in killing the product/addend logic    
-        if (x[14:10] + y[14:10] < 15)   flipPeFlag = 1'b1;
+        if (x[14:10] + y[14:10] <= 15)   flipPeFlag = 1'b1;
         else                            flipPeFlag = 1'b0;
     end
     
@@ -80,8 +80,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         Am = ZmShift[43:10];
     end
 
-    // Check for unecessary addition then assign the nsig flag a specific value to tell the program that either the product dominates (transmit product), 
-    // Z dominates (transmit addend), or neither dominates and perform normal floating point addition.
+    // Check for unecessary addition then assign the nsig flag a specific value to tell the program that either the product dominates (transmit product nsig = 2'b01), 
+    // Z dominates (transmit addend nsig = 2'b10), or neither dominates and perform normal floating point addition (nsig = 2'b00).
     always_comb begin : checkSignificance
         if (($unsigned(Pe) > $unsigned(Ze)) & (($unsigned(Pe) - $unsigned(Ze)) > 11) & ~flipPeFlag)   nsig = 2'b01;  
         else if (($unsigned(Ze) > (~Pe + 1'b1)) & (($unsigned(Ze) - (~Pe + 1)) > 11) & flipPeFlag)    nsig = 2'b10;

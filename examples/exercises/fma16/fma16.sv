@@ -2,10 +2,8 @@
 // Troy Kaufman
 // tkaufman@g.hmc.edu
 // 2/6/25
-/*
-    Purpose: Half precision FMA functional unit that handles normalized, positive, and signed floating point numbers including
-    special cases and rounding modes (RNE, RZ, RP, and RN)
-*/
+// Purpose: Half precision FMA functional unit that handles normalized, positive, and signed floating point numbers including
+// special cases and rounding modes (RNE, RZ, RP, and RN)
 
 module fma16(input logic  [15:0]    x, y, z, 
              input logic            mul, add, negp, negz, 

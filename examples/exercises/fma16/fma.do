@@ -56,7 +56,7 @@ add wave sim:/testbench_fma16/dut/specCase/flags
 add wave sim:/testbench_fma16/dut/specCase/result
 add wave sim:/testbench_fma16/dut/addunit/tempMm
 #add wave sim:/testbench_fma16/dut/specCase/nonZeroResults
-add wave sim:/testbench_fma16/dut/specCase/of
+#add wave sim:/testbench_fma16/dut/specCase/of
 
 # fmaround signals
 add wave sim:/testbench_fma16/dut/roundunit/roundFlag
@@ -69,6 +69,7 @@ add wave sim:/testbench_fma16/dut/roundunit/sticky
 add wave sim:/testbench_fma16/dut/roundunit/stickyPrime 
 add wave sim:/testbench_fma16/dut/roundunit/roundResult
 add wave sim:/testbench_fma16/dut/roundunit/nonZeroMantFlag
+add wave sim:/testbench_fma16/dut/roundunit/fullPm
 
 
 
@@ -96,6 +97,7 @@ add wave sim:/testbench_fma16/dut/addunit/shiftPmFlag
 
 add wave sim:/testbench_fma16/dut/addunit/shiftPm
 add wave sim:/testbench_fma16/dut/addunit/Am
+#add wave sim:/testbench_fma16/dut/addunit/PeTemp
 #add wave sim:/testbench_fma16/dut/addunit/Sm 
 
 #add wave sim:/testbench_fma16/dut/addunit/Amshifted
