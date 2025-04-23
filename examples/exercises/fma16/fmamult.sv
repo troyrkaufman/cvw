@@ -4,9 +4,7 @@
 // 3/14/25
 // Purpose: Half-precision floating point multiplication that works with normalized, positive, and signed values
 
-
 module fmamult( input logic   [15:0]      x, y,
-                input logic               negp,
                 input logic   [1:0]       roundmode,
                 output logic  [15:0]      product,
                 output logic  [21:0]      fullPm);

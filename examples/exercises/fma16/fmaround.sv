@@ -13,19 +13,19 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 output logic    [15:0]  roundResult,
                 output logic            nonZeroMantFlag, roundFlag);
 
-    logic sign;                     // sum's sign since it is used so often
-    logic lsb;                      // the unit in last place: ULP
-    logic guard;                    // guard bit directly to the right of the lsb
-    logic rnd;                      // round bit directly to the right of the guard bit 
-    logic sticky;                   // the bitwise OR of the remaining bits right of the rnd bit
-    logic lsbPrime;                 // the lsb bit
-    logic rndPrime;                 // the guard bit
-    logic stickyPrime;              // bitwise OR between the rnd and sticky bits
+    logic           sign;           // sum's sign since it is used so often
+    logic           lsb;            // the unit in last place: ULP
+    logic           guard;          // guard bit directly to the right of the lsb
+    logic           rnd;            // round bit directly to the right of the guard bit 
+    logic           sticky;         // the bitwise OR of the remaining bits right of the rnd bit
+    logic           lsbPrime;       // the lsb bit
+    logic           rndPrime;       // the guard bit
+    logic           stickyPrime;    // bitwise OR between the rnd and sticky bits
     logic [14:0]    maxNum;         // the maximum number in half precision fp representation
-    logic [15:0]   infP;           // positive infinity value
-    logic [15:0]   infN;           // negative infinity value
-    logic [15:0]   zeroP;          // positive zero
-	logic [15:0]   zeroN;          // negative zero
+    logic [15:0]    infP;           // positive infinity value
+    logic [15:0]    infN;           // negative infinity value
+    logic [15:0]    zeroP;          // positive zero
+	logic [15:0]    zeroN;          // negative zero
 
     // general assignments for values that show up throughout the program
     assign zeroP = 'h0000;
@@ -44,7 +44,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
     assign rndPrime = guard;
     assign stickyPrime = rnd | sticky;
         
-    // major rounding block
+    // major rounding algorithm
     always_comb begin : rounding
     // RNE rounding
         if (roundmode == 2'b01)
@@ -81,7 +81,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
             // if overflow and sign bit are set make the fma output the negative maximum number
             if (overFlowFlag & sign)
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
-            // if overflow and sign bit are set make the fma output the negative maximum number
+            // if overflow and ~sign bit are set make the fma output the positive infinity
             else if (overFlowFlag & ~sign)
                 begin roundResult = infP; roundFlag = '1; end
             // checks for if an insignificant addend will contribute to rounding the product down when the product's mantissa is all zeros. Outputs the 
@@ -102,10 +102,10 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 begin roundResult = sum; roundFlag = '0; end
     // RN rounding
         else if (roundmode == 2'b10)
-            // if overflow and sign bit are set make the fma output the negative maximum number
+            // if overflow and sign bit are set make the fma output the negative infinity
             if (overFlowFlag & sign)
                 begin roundResult = infN; roundFlag = '1; end
-            // if overflow and sign bit are set make the fma output the negative maximum number
+            // if overflow and ~sign bit are set make the fma output the positive maxinum number
             else if (overFlowFlag & ~sign)
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
             // checks for if an insignificant addend will contribute to rounding the product down when the product's mantissa is all zeros. The nested if statement 

@@ -10,11 +10,11 @@
                 		output logic        	specialCaseFlag, overFlowFlag,
 						output logic 	[3:0]	flags);
 
-   	logic [15:0]   infP;           // positive infinity value
-	logic [15:0]   infN;           // negative infinity value
-	logic [15:0]   zeroP;          // positive zero
-	logic [15:0]   zeroN;          // negative zero
-	logic [15:0]   NaN;            // NaN value
+   	logic [15:0]   infP;           	// positive infinity value
+	logic [15:0]   infN;           	// negative infinity value
+	logic [15:0]   zeroP;          	// positive zero
+	logic [15:0]   zeroN;          	// negative zero
+	logic [15:0]   NaN;            	// NaN value
 
 	logic          oFFlag;			// overflow flag
 	logic          inXFlag;			// inexact flag
@@ -55,12 +55,12 @@
 		if (anyNaN) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
 
 		// NaN indeterminate multiplication
-		else if (((x == (zeroP|zeroN))&(y == (infP|infN))||(((x == (infP|infN))&(y == (zeroP|zeroN)))))) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
+		else if (((x == (zeroP|zeroN))&(y == (infP|infN))|(((x == (infP|infN))&(y == (zeroP|zeroN)))))) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
 
 		// NaN indeterminate subtraction
-		else if ((product == infP) & (z == infN) || (product == infN) & (z == infP)) begin result = NaN; inVFlag = '1;specialCaseFlag = '1; end
+		else if ((product == infP)&(z == infN)|(product == infN)&(z == infP)) begin result = NaN; inVFlag = '1;specialCaseFlag = '1; end
 		
-		// check overflow flag
+		// check overflow flag as well as if the product and addend have different signs to produce infinity variants
 		else if (oFFlag) 
 			if (product[15]^z[15]) 	begin result = '0; inVFlag = '0; specialCaseFlag = '0; end
 			else 					begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
@@ -76,7 +76,7 @@
 	// outputs the flags
 	assign flags = {inVFlag, oFFlag, 1'b0, inXFlag};
 
-	// for readability purposes let's assign directly output the overflow flag
+	// for readability purposes let's directly output the overflow flag
 	assign overFlowFlag = oFFlag;
  endmodule
 

@@ -5,7 +5,6 @@
 // 3/14/17
 // Purpose: Half-precision floating point addition that works with normalized positive and signed values
 
-
 module fmaadd(  input logic [15:0]  product, x, y, z,
                 input logic [21:0]  fullPm,
                 input logic         mul, add,
@@ -45,7 +44,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
 
         // produces a flag that determines if the sum of the factors' exponents are less than 15 which will be used in killing the product/addend logic    
         if (x[14:10] + y[14:10] <= 15)   flipPeFlag = 1'b1;
-        else                            flipPeFlag = 1'b0;
+        else                             flipPeFlag = 1'b0;
     end
     
     // Z's exponent
@@ -66,11 +65,11 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // exponent comparison that will dictate whether the product's or addend's mantissa will be shifted during the sum calculation
     assign compExpFlag = ($unsigned(Pe) > $unsigned(Ze)) ? 1'b1 : 1'b0;
 
-    // Addend's and product's normalized mantissa algorithm pre-summation where the smaller exponent between the product and addend will have its mantissa shifted. 
+    // addend's and product's normalized mantissa algorithm pre-summation where the smaller exponent between the product and addend will have its mantissa shifted. 
     // Depending on the compExpFlag, the exponents will be subtracted from one another so that the result is a positive value and a shift product's mantissa 
     // flag will be asserted. The addend's mantissa will be shifted all the way to the left in the bus as shown in ZmPreShift. Depending on the shiftPmFlag, 
     // either the unaltered product's mantissa or addend's mantissa will be shifted to the right depending on the exponent difference to properly align both numbers. 
-    // Then the addend's mantissa is obtained in a smaller bus so that both the altered product's mantissa and altered addend's mantissa are the saem bit width. 
+    // Then the addend's mantissa is retrieved in a smaller bus so that both the altered product's mantissa and altered addend's mantissa are the same bit width. 
     always_comb begin : alignmentShiftPreSum
         if (compExpFlag) begin Acnt = {2'b0, Pe} - {2'b0, Ze}; shiftPmFlag = 1'b0; end 
         else             begin Acnt = {2'b0, Ze} - {2'b0, Pe}; shiftPmFlag = 1'b1; end 
@@ -84,12 +83,13 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     // Z dominates (transmit addend nsig = 2'b10), or neither dominates and perform normal floating point addition (nsig = 2'b00).
     always_comb begin : checkSignificance
         if (($unsigned(Pe) > $unsigned(Ze)) & (($unsigned(Pe) - $unsigned(Ze)) > 11) & ~flipPeFlag)   nsig = 2'b01;  
-        else if (($unsigned(Ze) > (~Pe + 1'b1)) & (($unsigned(Ze) - (~Pe + 1)) > 11) & flipPeFlag)    nsig = 2'b10;
+        else if (($unsigned(Ze) > (~Pe + 1'b1)) & (($unsigned(Ze) - (~Pe + 1'b1)) > 11) & flipPeFlag) nsig = 2'b10;
         else if ((Ze < Pe) & (Ze - Pe < -'d11))                                                       nsig = 2'b10;
         else                                                                                          nsig = 2'b00;
     end
 
-    // compute mantissa's magnitude. It's necessary to left shift Am by one to account for potential overflow. addType will be used for sign computation and post summation normalization 
+    // compute mantissa's magnitude. It's necessary to right shift Am by one to account for potential overflow. addType will be used for sign computation and post 
+    // summation normalization 
     // addType = 2'b00: positive product and positive addend
     // addType = 2'b01: positive product and negative addend
     // addType = 2'b10: negative product and positive addend

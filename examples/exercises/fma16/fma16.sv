@@ -36,14 +36,14 @@ module fma16(input logic  [15:0]    x, y, z,
 
     // identify which inputs are hard coded to values and/or have their signs flipped based on the operation
     always_comb begin : defineOperation
-        if      (multOp)    begin flipX = negp ? {~x[15],x[14:0]} : x; flipY = y;       flipZ = negz ? 16'h8000 : 16'h0000;   end
-        else if (addOp)     begin flipX = negp ? {~x[15],x[14:0]} : x;  flipY = 16'h3c00;   flipZ = negz ? {~z[15],z[14:0]} : z;  end
-        else if (mulAddOp)  begin flipX = negp ? {~x[15],x[14:0]} : x; flipY = y;       flipZ = negz ? {~z[15],z[14:0]} : z;  end
+        if      (multOp)    begin flipX = negp ? {~x[15],x[14:0]} : x;  flipY = y;           flipZ = negz ? 16'h8000 : 16'h0000;   end
+        else if (addOp)     begin flipX = negp ? {~x[15],x[14:0]} : x;  flipY = 16'h3c00;    flipZ = negz ? {~z[15],z[14:0]} : z;  end
+        else if (mulAddOp)  begin flipX = negp ? {~x[15],x[14:0]} : x;  flipY = y;           flipZ = negz ? {~z[15],z[14:0]} : z;  end
         else                begin flipX = 16'h0; flipY = y; flipZ = 16'h0; end
     end
 
     // floating point multiplication module
-    fmamult multunit(.x(flipX), .y(flipY), .negp(negp), .roundmode(roundmode),.product(product), .fullPm(fullPm));
+    fmamult multunit(.x(flipX), .y(flipY), .roundmode(roundmode),.product(product), .fullPm(fullPm));
 
     // floating point addition module
     fmaadd addunit(.product(product), .x(flipX), .y(flipY), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum), .nSigFlag(nSigFlag));
