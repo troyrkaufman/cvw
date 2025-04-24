@@ -63,7 +63,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     assign Ps = product[15];
 
     // exponent comparison that will dictate whether the product's or addend's mantissa will be shifted during the sum calculation
-    assign compExpFlag = ($unsigned(Pe) > $unsigned(Ze)) ? 1'b1 : 1'b0;
+    assign compExpFlag = ($unsigned(Pe) > $unsigned(Ze)); 
 
     // addend's and product's normalized mantissa algorithm pre-summation where the smaller exponent between the product and addend will have its mantissa shifted. 
     // Depending on the compExpFlag, the exponents will be subtracted from one another so that the result is a positive value and a shift product's mantissa 
@@ -130,7 +130,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     always_comb begin : calculateMantExp
         if (nsig == 2'b01)                                      
             begin Mm = product[9:0]; Me = product[14:10]; tempMm = '0; end
-        else if ((nsig == 2'b10) | (product[14:0] == 15'h0000)) 
+        else if ((nsig == 2'b10)) 
             begin Mm = z[9:0]; Me = z[14:10]; tempMm = '0; end
         else 
             if (addType == 2'b00 & checkSm[33] & ~shiftPmFlag) 

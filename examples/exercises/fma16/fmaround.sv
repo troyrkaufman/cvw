@@ -9,7 +9,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 input logic     [33:0]  fullSum,
                 input logic     [1:0]   nSigFlag,
                 input logic             overFlowFlag, multOp, addOp, 
-                input logic     [1:0]   roundmode,
+                input logic     [1:0]   roundMode,
                 output logic    [15:0]  roundResult,
                 output logic            nonZeroMantFlag, roundFlag);
 
@@ -46,8 +46,8 @@ module fmaround(input logic     [15:0]  product, z, sum,
         
     // major rounding algorithm
     always_comb begin : rounding
-    // RNE rounding
-        if (roundmode == 2'b01)
+    // RNE rounding (currently has sign and inf vs NaN issues)
+        if (roundMode == 2'b01)
             // if overflow and sign bit are set make the fma output negative infinity 
             if (overFlowFlag & sign)
                 begin roundResult = infN; roundFlag = '1; end
@@ -63,28 +63,28 @@ module fmaround(input logic     [15:0]  product, z, sum,
             // else make the fma choose a different output that doesn't involve rounding
             else    
                 begin roundResult = sum; roundFlag = '0; end
-    // RZ rounding
-        else if (roundmode == 2'b00) 
+    // RZ rounding (currently has rounding down issues so fma_2 is failing)
+        else if (roundMode == 2'b00) 
             // if overflow and sign bit are set make the fma output the negative maximum number
             if (overFlowFlag & sign) 
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
             // if overflow and ~sign bit are set make the fma output positive infinity
             else if (overFlowFlag & ~sign)
                 begin roundResult = infP; roundFlag = '1; end
-            // checks for if an insignificant addend will contribute to rounding the product down when the product's mantissa is all zeros. Outputs the appropriate result accordingly
-            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP)&addOp) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
+            // checks if an insignificant addend will contribute to rounding the product down when the sum's mantissa is all nonzero. Outputs the appropriate result accordingly
+            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullSum[22:0]!==0)&(z[15])&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
             else 
             // else make the fma choose a different output that doesn't involve rounding
             begin roundResult = 'h0; roundFlag = 0; end
-    // RP rounding
-        else if (roundmode == 2'b11) 
+    // RP rounding (currently has sign and rounding issues)
+        else if (roundMode == 2'b11) 
             // if overflow and sign bit are set make the fma output the negative maximum number
             if (overFlowFlag & sign)
                 begin roundResult = {sign, maxNum}; roundFlag = '1; end
             // if overflow and ~sign bit are set make the fma output the positive infinity
             else if (overFlowFlag & ~sign)
                 begin roundResult = infP; roundFlag = '1; end
-            // checks for if an insignificant addend will contribute to rounding the product down when the product's mantissa is all zeros. Outputs the 
+            // checks for if an insignificant addend will contribute to rounding the product down when the product's mantissa is all zeros. 
             // appropriate result accordingly
             else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
                 if (~sign)  begin roundResult = sum; roundFlag = '0; end
@@ -100,8 +100,8 @@ module fmaround(input logic     [15:0]  product, z, sum,
                     begin roundResult = sum; roundFlag = '0; end
             else
                 begin roundResult = sum; roundFlag = '0; end
-    // RN rounding
-        else if (roundmode == 2'b10)
+    // RN rounding (currently has sign and rounding issues)
+        else if (roundMode == 2'b10)
             // if overflow and sign bit are set make the fma output the negative infinity
             if (overFlowFlag & sign)
                 begin roundResult = infN; roundFlag = '1; end

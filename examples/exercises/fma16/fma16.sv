@@ -7,7 +7,7 @@
 
 module fma16(input logic  [15:0]    x, y, z, 
              input logic            mul, add, negp, negz, 
-             input logic  [1:0]     roundmode, 
+             input logic  [1:0]     roundMode, 
              output logic [15:0]    result, 
              output logic [3:0]     flags);
 
@@ -43,16 +43,16 @@ module fma16(input logic  [15:0]    x, y, z,
     end
 
     // floating point multiplication module
-    fmamult multunit(.x(flipX), .y(flipY), .roundmode(roundmode),.product(product), .fullPm(fullPm));
+    fmamult multunit(.x(flipX), .y(flipY), .product(product), .fullPm(fullPm));
 
     // floating point addition module
     fmaadd addunit(.product(product), .x(flipX), .y(flipY), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum), .nSigFlag(nSigFlag));
 
     // floating point special scenarios and flags module
-    specialCases specCase(.x(flipX), .y(flipY), .z(flipZ), .product(product), .sum(sum), .nonZeroMantFlag(nonZeroMantFlag), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag(overFlowFlag), .flags(flags));
+    specialCases specCase(.x(flipX), .y(flipY), .z(flipZ), .product(product), .sum(sum), .nonZeroMantFlag(nonZeroMantFlag), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag        (overFlowFlag), .flags(flags));
 
     // floating point rounding module
-    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .nSigFlag(nSigFlag), .overFlowFlag(overFlowFlag), .multOp(multOp), .addOp(addOp), .roundmode(roundmode), .roundResult(roundResult), .nonZeroMantFlag(nonZeroMantFlag), .roundFlag(roundFlag));
+    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .nSigFlag(nSigFlag), .overFlowFlag(overFlowFlag), .multOp(multOp), .addOp(addOp), .roundMode(roundMode), .roundResult(roundResult), .nonZeroMantFlag(nonZeroMantFlag), .roundFlag(roundFlag));
 
     // Choose which result to output based on special, operation, and rounding flags
     always_comb begin : finalResult
