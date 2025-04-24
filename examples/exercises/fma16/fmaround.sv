@@ -72,7 +72,8 @@ module fmaround(input logic     [15:0]  product, z, sum,
             else if (overFlowFlag & ~sign)
                 begin roundResult = infP; roundFlag = '1; end
             // checks if an insignificant addend will contribute to rounding the product down when the sum's mantissa is all nonzero. Outputs the appropriate result accordingly
-            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullSum[22:0]!==0)&(z[15])&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
+            // else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&((fullPm[8:0]==0))&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
+            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(guard)&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
             else 
             // else make the fma choose a different output that doesn't involve rounding
             begin roundResult = 'h0; roundFlag = 0; end
