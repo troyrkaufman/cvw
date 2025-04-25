@@ -36,15 +36,18 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     logic           flipPeFlag;         // helps determine if either the product or addend should be killed
     integer i;                          // integer counter for recording the number of 0s in a bus    
     logic [$clog2(35)-1:0]  ZeroCnt;    // logic value that holds the integer i
+    logic [4:0]     productExp;          // sum of X's and Y's exponents
+
+    assign productExp = x[14:10] + y[14:10];
 
     // calculate product's exponent based on operation and check for small exponential cases
     always_comb begin : calcTypePe
         if (mul && add) Pe = product[14:10];
-        else            Pe = x[14:10] + y[14:10] - 4'd15; 
+        else            Pe = productExp - 5'd15; 
 
         // produces a flag that determines if the sum of the factors' exponents are less than 15 which will be used in killing the product/addend logic    
-        if (x[14:10] + y[14:10] <= 15)   flipPeFlag = 1'b1;
-        else                             flipPeFlag = 1'b0;
+        if ((x[14:10] + y[14:10]) <= 'd15)   flipPeFlag = 1'b1;
+        else                                 flipPeFlag = 1'b0;
     end
     
     // Z's exponent
@@ -100,6 +103,10 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         else if (((Ps ^ Zs) == 1'b0) & (Zs == 1'b0))  begin Sm = shiftPm + (Am>>1);     addType = 2'b00; end
         else                                          begin Sm = shiftPm + (Am>>1);     addType = 2'b11; end
     end
+
+    logic [33:0]    debugNegPm, debugNegAm;
+    assign debugNegAm = ((~Am+1)>>1);
+    assign debugNegPm = ~shiftPm + 1;
 
     // compute sign. Similar sign addition will result in a sign of 0 like 2'b00 and 2'b11. Mixed sign addition depends on the product's and addend's exponent and mantissa magnitudes. 
     always_comb begin : computeSign

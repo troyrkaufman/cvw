@@ -21,17 +21,35 @@ add wave sim:/testbench_fma16/y
 add wave sim:/testbench_fma16/z
 add wave sim:/testbench_fma16/result
 add wave sim:/testbench_fma16/rexpected
+add wave sim:/testbench_fma16/dut/addunit/fullSum
+add wave sim:/testbench_fma16/dut/roundunit/fullPm
+add wave sim:/testbench_fma16/dut/addunit/Acnt
+add wave sim:/testbench_fma16/dut/addunit/nsig
+add wave sim:/testbench_fma16/dut/addunit/addType
+add wave sim:/testbench_fma16/dut/addunit/debugNegPm
+add wave sim:/testbench_fma16/dut/addunit/debugNegAm
+add wave sim:/testbench_fma16/dut/addunit/checkSm 
+add wave sim:/testbench_fma16/dut/addunit/Mm
+add wave sim:/testbench_fma16/dut/addunit/Me
+add wave sim:/testbench_fma16/dut/addunit/sign
 
 add wave sim:/testbench_fma16/flags
 add wave sim:/testbench_fma16/flagsexpected
+add wave sim:/testbench_fma16/dut/specCase/specialCaseFlag
+add wave sim:/testbench_fma16/dut/roundunit/roundFlag
 
+
+#####Put relevant signals above######
+
+# Mult unit
 add wave sim:/testbench_fma16/dut/multunit/multMant
 add wave sim:/testbench_fma16/dut/multunit/shiftMant
 add wave sim:/testbench_fma16/dut/multunit/exp
 add wave sim:/testbench_fma16/dut/multunit/sign
 add wave sim:/testbench_fma16/dut/multunit/checkExpFlag
-
 add wave sim:/testbench_fma16/dut/addunit/product
+
+# General signals for +- and operations
 add wave sim:/testbench_fma16/dut/negz
 add wave sim:/testbench_fma16/dut/negp
 add wave sim:/testbench_fma16/dut/mul
@@ -43,11 +61,10 @@ add wave sim:/testbench_fma16/dut/addunit/Ze
 
 add wave sim:/testbench_fma16/dut/addunit/Ps
 add wave sim:/testbench_fma16/dut/addunit/Zs
-add wave sim:/testbench_fma16/dut/addunit/fullSum
 add wave sim:/testbench_fma16/dut/addunit/sum
 
 # signals for from specialCases.sv
-add wave sim:/testbench_fma16/dut/specCase/specialCaseFlag
+
 add wave sim:/testbench_fma16/dut/specCase/oFFlag 
 #add wave sim:/testbench_fma16/dut/specCase/uFFlag 
 add wave sim:/testbench_fma16/dut/specCase/inVFlag
@@ -59,7 +76,7 @@ add wave sim:/testbench_fma16/dut/addunit/tempMm
 #add wave sim:/testbench_fma16/dut/specCase/of
 
 # fmaround signals
-add wave sim:/testbench_fma16/dut/roundunit/roundFlag
+
 add wave sim:/testbench_fma16/dut/roundunit/lsb
 add wave sim:/testbench_fma16/dut/roundunit/lsbPrime
 add wave sim:/testbench_fma16/dut/roundunit/guard
@@ -112,6 +129,4 @@ add wave sim:/testbench_fma16/dut/addunit/Mm
 add wave sim:/testbench_fma16/dut/addunit/Me
 add wave sim:/testbench_fma16/dut/addunit/sign
 
-
-#run 300 ns
 run -all
