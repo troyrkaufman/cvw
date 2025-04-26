@@ -108,15 +108,18 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
     assign debugNegAm = ((~Am+1)>>1);
     assign debugNegPm = ~shiftPm + 1;
 
+    logic [4:0] checkPe;
+    assign checkPe = (flipPeFlag&(Ps^Zs)) ? productExp : Pe;
+
     // compute sign. Similar sign addition will result in a sign of 0 like 2'b00 and 2'b11. Mixed sign addition depends on the product's and addend's exponent and mantissa magnitudes. 
     always_comb begin : computeSign
         if (addType == 2'b00)                                                               sign = '0;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm, 11'b0})) && addType == 2'b01)    sign = '0;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm, 11'b0})) && addType == 2'b10)    sign = '1;
-        else if (($unsigned({Ze, Zm, 11'b0}) > $unsigned({Pe, Pm})) && addType == 2'b01)    sign = '1;
+        else if (($unsigned({Ze, Zm, 11'b0}) >= $unsigned({Pe, Pm})) && addType == 2'b01)    sign = '1;
         else if (($unsigned({Ze, Zm, 11'b0}) > $unsigned({Pe, Pm})) && addType == 2'b10)    sign = '0;
         else if (addType == 2'b11)                                                          sign = '1;
-        else                                                                                sign = '0; 
+        else                                                                                sign = '1; 
     end
 
     // prepare Sm for normalization phase. At this point Sm might be inverted after the summation. Checking Sm's MSB and the current addType holds enough information to properly 

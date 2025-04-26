@@ -32,6 +32,7 @@ add wave sim:/testbench_fma16/dut/addunit/checkSm
 add wave sim:/testbench_fma16/dut/addunit/Mm
 add wave sim:/testbench_fma16/dut/addunit/Me
 add wave sim:/testbench_fma16/dut/addunit/sign
+add wave sim:/testbench_fma16/dut/addunit/checkPe
 
 add wave sim:/testbench_fma16/flags
 add wave sim:/testbench_fma16/flagsexpected

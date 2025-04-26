@@ -15,6 +15,10 @@ module fmamult( input logic   [15:0]      x, y,
     logic [9:0]     shiftMant;      // extracts the proper upper bits from multMant
     logic           zeroInputFlag;  // flag that determines if either input is +/- 0
 
+        logic checkExpHigh;
+        logic checkExpLow;
+        logic zeroExp;
+
     // check if either X or Y are +- zero
     assign zeroInputFlag = ((x[14:0] == 15'h0) | (y[14:0] == 15'h0));
 
@@ -29,14 +33,21 @@ module fmamult( input logic   [15:0]      x, y,
         else                    begin shiftMant = multMant[19:10]; exp = ({1'b0,x[14:10]} + {1'b0,y[14:10]}) - 5'd15; end
 
         // check if exp is greater than or equal to 'd31 
-        checkExpFlag = (exp >= 'd31) ? '1 : '0; 
+
+
+        checkExpFlag = (exp >= 6'd31) ? '1 : '0; 
+
+        checkExpHigh = (exp >= 'd31); 
+        checkExpLow = (x[14:10] + y[14:10] < 15);
+        zeroExp = (checkExpHigh & checkExpLow);
         
         // calculate the number's sign
         sign = x[15] ^ y[15];
 
         // output product calculation depending on if an overflow in the exponent occurs and/or the product is negative. Also check if the inputs were zero. 
         if (checkExpFlag&sign)          product = 16'hfc00;
-        else if (checkExpFlag&~sign)    product = 16'h7c00;
+        else if (zeroExp)               product = {sign, 5'h0, shiftMant};
+        else if (checkExpFlag&~sign)    product = 16'h7c00; // need to alter...messing up some signage when there are two small factors for the product. the exponent is too large
         else if (zeroInputFlag)         product = 16'h0;
         else                            product = {sign, exp[4:0], shiftMant};
     end 

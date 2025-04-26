@@ -71,24 +71,22 @@ module fmaround(input logic     [15:0]  product, z, sum,
             // else make the fma choose a different output that doesn't involve rounding
             if (overFlowFlag & sign)        begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)  begin roundResult = infP; roundFlag = '1; end
-            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(guard|(lsb&(fullPm[20:11]<fullSum[32:23])))&(z!=zeroN&z!=zeroP)) begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
-            else 
-            begin roundResult = 'h0; roundFlag = 0; end
+            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(guard|(lsb&(fullPm[20:11]<fullSum[32:23])))&(z!=zeroN&z!=zeroP)) 
+                                            begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
+            else                            begin roundResult = 'h0; roundFlag = 0; end
     // RP rounding (currently has sign and rounding issues)
         else if (roundMode == 2'b11) 
             // if overflow and sign bit are set make the fma output the negative maximum number
-            if (overFlowFlag & sign)
-                begin roundResult = {sign, maxNum}; roundFlag = '1; end
             // if overflow and ~sign bit are set make the fma output the positive infinity
-            else if (overFlowFlag & ~sign)
-                begin roundResult = infP; roundFlag = '1; end
             // checks for if an insignificant addend will contribute to rounding the product down when the product's mantissa is all zeros. 
             // appropriate result accordingly
-            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
-                if (~sign)  begin roundResult = sum; roundFlag = '0; end
-                else begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             // if there's no overflow flag, the sum is positive and the product is non zero then we choose to add 1 to either the sum or product based 
             // on the operation. else we let the fma choose a different output that doesn't involve rounding
+            if (overFlowFlag & sign)            begin roundResult = {sign, maxNum}; roundFlag = '1; end
+            else if (overFlowFlag & ~sign)      begin roundResult = infP; roundFlag = '1; end
+            else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(fullPm[9:0] == 10'b0)&(z!=zeroN&z!=zeroP))  
+                if (~sign)  begin roundResult = sum; roundFlag = '0; end
+                else        begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1;end
             else if (~overFlowFlag & ~sign & (product!=zeroN&product!=zeroP))
                 if ((rndPrime | stickyPrime) & addOp|(~multOp&~addOp))
                     begin roundResult = {sign, sum[14:0] + 15'd1}; roundFlag = '1; end
@@ -97,7 +95,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
                 else 
                     begin roundResult = sum; roundFlag = '0; end
             else
-                begin roundResult = sum; roundFlag = '0; end
+                    begin roundResult = sum; roundFlag = '0; end
     // RN rounding (currently has sign and rounding issues)
         else if (roundMode == 2'b10)
             // if overflow and sign bit are set make the fma output the negative infinity
