@@ -123,5 +123,5 @@ module fmaround(input logic     [15:0]  product, z, sum,
     end
 
     // output if there are nonzero bits in sum's full mantissa. This is useful for handling special cases. 
-    assign nonZeroMantFlag = rndPrime | stickyPrime; 
+    assign nonZeroMantFlag = (product[14:0] != '0) ? rndPrime | stickyPrime : '0; 
 endmodule

@@ -116,7 +116,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         if (addType == 2'b00)                                                               sign = '0;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm, 11'b0})) && addType == 2'b01)    sign = '0;
         else if (($unsigned({Pe, Pm}) > $unsigned({Ze, Zm, 11'b0})) && addType == 2'b10)    sign = '1;
-        else if (($unsigned({Ze, Zm, 11'b0}) >= $unsigned({Pe, Pm})) && addType == 2'b01)    sign = '1;
+        else if (($unsigned({Ze, Zm, 11'b0}) >= $unsigned({Pe, Pm})) && addType == 2'b01)   sign = '1;
         else if (($unsigned({Ze, Zm, 11'b0}) > $unsigned({Pe, Pm})) && addType == 2'b10)    sign = '0;
         else if (addType == 2'b11)                                                          sign = '1;
         else                                                                                sign = '1; 

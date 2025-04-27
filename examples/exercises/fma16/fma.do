@@ -34,6 +34,7 @@ add wave sim:/testbench_fma16/dut/addunit/Me
 add wave sim:/testbench_fma16/dut/addunit/sign
 add wave sim:/testbench_fma16/dut/addunit/checkPe
 
+
 add wave sim:/testbench_fma16/flags
 add wave sim:/testbench_fma16/flagsexpected
 add wave sim:/testbench_fma16/dut/specCase/specialCaseFlag
@@ -48,6 +49,9 @@ add wave sim:/testbench_fma16/dut/multunit/shiftMant
 add wave sim:/testbench_fma16/dut/multunit/exp
 add wave sim:/testbench_fma16/dut/multunit/sign
 add wave sim:/testbench_fma16/dut/multunit/checkExpFlag
+add wave sim:/testbench_fma16/dut/multunit/checkExpHigh
+add wave sim:/testbench_fma16/dut/multunit/checkExpLow
+add wave sim:/testbench_fma16/dut/multunit/zeroExp
 add wave sim:/testbench_fma16/dut/addunit/product
 
 # General signals for +- and operations

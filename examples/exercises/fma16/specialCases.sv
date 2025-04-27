@@ -43,10 +43,29 @@
 	assign infN = 'hfc00;
 	assign NaN  = 'h7e00;
 
-	// overflow logic depends on if sum's exponent becomes 'h1f
+	logic checkXInfP, checkXInfN, checkXZeroP, checkXZeroN;
+	logic checkYInfP, checkYInfN, checkYZeroP, checkYZeroN;
+	logic checkZInfP, checkZInfN, checkZZeroP, checkZZeroN;
+
+	logic checkXZero, checkYZero, checkZZero;
+	logic checkXInf, checkYInf, checkZInf;
+
+	assign checkXInfP = (x == infP); assign checkXInfN = (x == infN); assign checkXZeroP = (x == zeroP); assign checkXZeroN = (x == zeroN);
+	assign checkYInfP = (y == infP); assign checkYInfN = (y == infN); assign checkYZeroP = (y == zeroP); assign checkYZeroN = (y == zeroN);
+	assign checkZInfP = (z == infP); assign checkZInfN = (z == infN); assign checkZZeroP = (z == zeroP); assign checkZZeroN = (z == zeroN);
+
+	assign checkXZero = checkXZeroP|checkXZeroN;
+	assign checkYZero = checkYZeroP|checkYZeroN;
+	assign checkZZero = checkZZeroP|checkZZeroN;
+
+	assign checkXInf = checkXInfP|checkXInfN;
+	assign checkYInf = checkYInfP|checkYInfN;
+	assign checkZInf = checkZInfP|checkZInfN;
+
+		// overflow logic depends on if sum's exponent becomes 'h1f
 	always_comb begin : overFlowLogic
-		if (sum[14:10]==5'h1f)	oFFlag = 'b1; 
-		else 					oFFlag = 'b0; 
+		if ((sum[14:10]==5'h1f)&~(checkXZero|checkYZero))	oFFlag = 'b1; 
+		else 												oFFlag = 'b0; 
 	end
 
 	// checks for NaN and infinity cases and outputs the result, invalid flag, and if there was a special case found
@@ -55,7 +74,10 @@
 		if (anyNaN) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
 
 		// NaN indeterminate multiplication
-		else if (((x == (zeroP|zeroN))&(y == (infP|infN))|(((x == (infP|infN))&(y == (zeroP|zeroN)))))) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
+		else if ((((checkXZeroN|checkXZeroP)&(checkXInfN|checkXInfP)&(~checkZInfP&~checkZInfN))|((((checkXInfN|checkXInfP)&(checkYZeroN|checkYZeroP)&(~checkZInfP&~checkZInfN)))))) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
+
+		else if ((checkXZero|checkYZero)&(checkZInfP)) begin result = infP; inVFlag = '0; specialCaseFlag = 1; end
+		else if ((checkXZero|checkYZero)&(checkZInfN)) begin result = infN; inVFlag = '0; specialCaseFlag = 1; end
 
 		// NaN indeterminate subtraction
 		else if ((product == infP)&(z == infN)|(product == infN)&(z == infP)) begin result = NaN; inVFlag = '1;specialCaseFlag = '1; end
@@ -65,11 +87,19 @@
 			if (product[15]^z[15]) 	begin result = '0; inVFlag = '0; specialCaseFlag = '0; end
 			else 					begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
 
+		// product is zero and 
+
 		// at least one of the inputs are inf
 		else if ((x == infP | y == infP) & (x[15] ^ y[15])) begin result = infN; inVFlag = '0;specialCaseFlag = '1; end
 		else if ((x == infP | y == infP) & (x[15] ~^ y[15])) begin result = infP; inVFlag = '0;specialCaseFlag = '1; end
 		else if ((x == infN | y == infN) & (x[15] ^ y[15])) begin result = infN; inVFlag = '0;specialCaseFlag = '1; end
 		else if ((x == infN | y == infN) & (x[15] ~^ y[15])) begin result = infP; inVFlag = '0; specialCaseFlag = '1; end
+		else if (((x==(zeroN)&(y==zeroN))&(z==zeroN))) begin result = zeroP; inVFlag = '0; specialCaseFlag = '1; end
+		else if (((x==(zeroP|zeroN)|(y==(zeroP|zeroN)))&(z==zeroP))) begin result = zeroP; inVFlag = '0; specialCaseFlag = '1; end
+		else if (((x==(zeroP|zeroN)|(y==(zeroP|zeroN)))&(z==zeroN))) begin result = zeroN; inVFlag = '0; specialCaseFlag = '1; end
+
+		// at least one input is a zero
+		else if (checkXZero|checkYZero|checkZZero) begin result = sum; inVFlag = '0; specialCaseFlag = '1; end
 		else                                              begin result = sum; inVFlag = '0; specialCaseFlag = '0; end
    end
 

@@ -45,9 +45,9 @@ module fmamult( input logic   [15:0]      x, y,
         sign = x[15] ^ y[15];
 
         // output product calculation depending on if an overflow in the exponent occurs and/or the product is negative. Also check if the inputs were zero. 
-        if (checkExpFlag&sign)          product = 16'hfc00;
+        if (checkExpFlag&sign&~zeroExp)          product = 16'hfc00;
         else if (zeroExp)               product = {sign, 5'h0, shiftMant};
-        else if (checkExpFlag&~sign)    product = 16'h7c00; // need to alter...messing up some signage when there are two small factors for the product. the exponent is too large
+        else if (checkExpFlag&~sign&~zeroExp)    product = 16'h7c00; // need to alter...messing up some signage when there are two small factors for the product. the exponent is too large
         else if (zeroInputFlag)         product = 16'h0;
         else                            product = {sign, exp[4:0], shiftMant};
     end 
