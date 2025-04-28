@@ -4,11 +4,11 @@
 // Purpose: Half precision floating point rounding module
 // RNE: 'b01 RP: 'b11 RN: 'b01 RZ: 'b00
 
-module fmaround(input logic     [15:0]  product, z, sum,
+module fmaround(input logic     [15:0]  product, x, y, z, sum,
                 input logic     [21:0]  fullPm,
                 input logic     [33:0]  fullSum,
                 input logic     [1:0]   nSigFlag, addType, 
-                input logic             overFlowFlag, multOp, addOp, 
+                input logic             overFlowFlag, multOp, addOp, checkMSB,
                 input logic     [1:0]   roundMode,
                 output logic    [15:0]  roundResult,
                 output logic            nonZeroMantFlag, roundFlag);
@@ -26,6 +26,10 @@ module fmaround(input logic     [15:0]  product, z, sum,
     logic [15:0]    infN;           // negative infinity value
     logic [15:0]    zeroP;          // positive zero
 	logic [15:0]    zeroN;          // negative zero
+    logic           Ps, Zs;
+
+    assign Ps = product[15];
+    assign Zs = sum[15];
 
     // general assignments for values that show up throughout the program
     assign zeroP = 'h0000;
@@ -43,8 +47,13 @@ module fmaround(input logic     [15:0]  product, z, sum,
     assign lsbPrime = lsb;
     assign rndPrime = guard;
     assign stickyPrime = rnd | sticky;
+
+    logic [9:0] tempMm;
+    assign tempMm = z[9:0] - 1;
+
+    logic  subToNormFlag;
+    assign subToNormFlag = (((x[14:10]+y[14:10]) <= 5)); // check mantissa overflow...
         
-    // major rounding algorithm
     always_comb begin : rounding
     // RNE rounding (currently has sign and inf vs NaN issues)
         if (roundMode == 2'b01)
@@ -72,8 +81,11 @@ module fmaround(input logic     [15:0]  product, z, sum,
             if (overFlowFlag & sign)        begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)  begin roundResult = infP; roundFlag = '1; end
             else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(guard|(lsb&(fullPm[20:11]<fullSum[32:23])))&(z!=zeroN&z!=zeroP)) 
-            //else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(guard)&(z!=zeroN&z!=zeroP))
                                             begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
+            else if ((addType == 2'b01)&(product[14:10]=='0)&(Ps^Zs)&subToNormFlag) // RZ only
+                                            begin roundResult = {Zs,z[14:10],tempMm}; roundFlag = '1; end
+            else if ((addType == 2'b00)&(product[14:10]=='0)&(Ps~^Zs)&subToNormFlag) // RZ only
+                                            begin roundResult = {Zs,z[14:10],z[9:0]}; roundFlag = '1;  end
             //
             else                            begin roundResult = 'h0; roundFlag = 0; end
     // RP rounding (currently has sign and rounding issues)

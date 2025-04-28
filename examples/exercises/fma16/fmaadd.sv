@@ -10,7 +10,8 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
                 input logic         mul, add,
                 output logic [15:0] sum,
                 output logic [33:0] fullSum, 
-                output logic [1:0]  nSigFlag, additionType);
+                output logic [1:0]  nSigFlag, additionType,
+                output logic        checkMSB);
 
     logic [4:0]     Pe;                 // sum of the product's exponents
     logic [4:0]     Ze;                 // z's exponent
@@ -142,21 +143,21 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
             begin Mm = product[9:0]; Me = product[14:10]; tempMm = '0; end
         else if ((nsig == 2'b10)) 
             begin Mm = z[9:0]; Me = z[14:10]; tempMm = '0; end
-        else if ((addType == 2'b01)&(product[14:10]=='0)&(Ps^Zs)) // RZ only
-            begin 
-                tempMm = '0;                        // OPTIMIZE!!!!!!
-                Mm = z[9:0] - 1; 
-                Me = z[14:10];
-            end
-            else if ((addType == 2'b00)&(product[14:10]=='0)&(Ps~^Zs)) // RZ only
-            begin 
-                tempMm = '0;                        
-                Mm = z[9:0]; 
-                Me = z[14:10];
-            end
+        // else if ((addType == 2'b01)&(product[14:10]=='0)&(Ps^Zs)) // RZ only
+        //     begin 
+        //         tempMm = '0;                        // OPTIMIZE!!!!!!
+        //         Mm = z[9:0] - 1; 
+        //         Me = z[14:10];
+        //     end
+        //     else if ((addType == 2'b00)&(product[14:10]=='0)&(Ps~^Zs)) // RZ only
+        //     begin 
+        //         tempMm = '0;                        
+        //         Mm = z[9:0]; 
+        //         Me = z[14:10];
+        //     end
         else 
             if (((addType == 2'b00) & checkSm[33] & ~shiftPmFlag)) // might need to get rid of the second part
-                begin   tempMm = checkSm << ZeroCnt;   // Only have one of these for
+                begin   tempMm = checkSm << ZeroCnt;                // Only have one of these for
                         Mm = tempMm[32:23]; 
                         Me = Pe + 1'b1; 
                 end
@@ -175,6 +176,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
 
     // summed mantissa that is properly normalized. This value is crucial for the rounding logic.
     assign fullSum = checkSm<<ZeroCnt;
+    assign checkMSB = checkSm[33];
 
     // Determines what type of insignficant addition took place. This is crucial information for the rounding logic.
     assign nSigFlag = nsig;

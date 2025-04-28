@@ -66,9 +66,12 @@
 	assign checkYInf = checkYInfP|checkYInfN;
 	assign checkZInf = checkZInfP|checkZInfN;
 
+	logic expSumFlag;
+	assign expSumFlag = (x[14:10] + y[14:10] <= 5); 
+
 		// overflow logic depends on if sum's exponent becomes 'h1f
 	always_comb begin : overFlowLogic
-		if ((sum[14:10]==5'h1f)&~(checkXZero|checkYZero))	oFFlag = 'b1; 
+		if ((sum[14:10]==5'h1f)&~(checkXZero|checkYZero)&(~expSumFlag))	oFFlag = 'b1; 
 		else 												oFFlag = 'b0; 
 	end
 
