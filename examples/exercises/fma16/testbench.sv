@@ -21,6 +21,9 @@ module testbench_fma16;
   // at start of test, load vectors and pulse reset
   initial
     begin
+      $dumpfile("fma16.vcd");
+      $dumpvars(0, testbench_fma16);
+      #10000;
       $readmemh("tests/fma_special_rz.tv", testvectors);
       vectornum = 0; errors = 0;
       reset = 1; #22; reset = 0;
@@ -41,6 +44,7 @@ module testbench_fma16;
         $display("  result = %h (%h expected) flags = %b (%b expected)", 
           result, rexpected, flags, flagsexpected);
         $display("Other inputs: mul: %b; add: %b; negp %b; negz: %b; roundmode: %b", mul, add, negp, negz, roundmode);
+        //$display("x exp: %b; y exp: %b; z exp: %b", x[14:10], y[14:10], z[14:10]);
         errors = errors + 1;
       end
       vectornum = vectornum + 1;

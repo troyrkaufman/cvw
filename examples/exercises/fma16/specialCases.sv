@@ -50,6 +50,10 @@
 	logic checkXZero, checkYZero, checkZZero;
 	logic checkXInf, checkYInf, checkZInf;
 
+	logic Xs, Ys, Zs;
+
+	assign Xs = x[15]; assign Ys = y[15]; assign Zs = z[15];
+
 	assign checkXInfP = (x == infP); assign checkXInfN = (x == infN); assign checkXZeroP = (x == zeroP); assign checkXZeroN = (x == zeroN);
 	assign checkYInfP = (y == infP); assign checkYInfN = (y == infN); assign checkYZeroP = (y == zeroP); assign checkYZeroN = (y == zeroN);
 	assign checkZInfP = (z == infP); assign checkZInfN = (z == infN); assign checkZZeroP = (z == zeroP); assign checkZZeroN = (z == zeroN);
@@ -74,20 +78,35 @@
 		if (anyNaN) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
 
 		// NaN indeterminate multiplication
-		else if ((((checkXZeroN|checkXZeroP)&(checkXInfN|checkXInfP)&(~checkZInfP&~checkZInfN))|((((checkXInfN|checkXInfP)&(checkYZeroN|checkYZeroP)&(~checkZInfP&~checkZInfN)))))) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
+		else if ((checkXZero&checkYInf&~checkZInf)|(checkXInf&checkYZero&~checkZInf)) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
 
-		else if ((checkXZero|checkYZero)&(checkZInfP)) begin result = infP; inVFlag = '0; specialCaseFlag = 1; end
-		else if ((checkXZero|checkYZero)&(checkZInfN)) begin result = infN; inVFlag = '0; specialCaseFlag = 1; end
+		// If there's an INF in product and a same sign INF in addend. Result is tha tspecific INF
+		// else if ((checkXZero&checkYInfP)&(checkZInfP)|(checkXInfP&checkYZero)&(checkZInfP)) begin result = 'h7e00; inVFlag = '1; specialCaseFlag = '1; end
+		// else if ((checkXZero&checkYInfN)&(checkZInfN)|(checkXInfN&checkYZero)&(checkZInfN)) begin result = 'h7e00; inVFlag = '1; specialCaseFlag = '1; end
+		// else if ((checkXInfP|checkYInfP)&(checkZInfP)) begin result = 'h7c00; inVFlag = '0; specialCaseFlag = '1; end
+		// else if ((checkXInfN|checkYInfN)&(checkZInfN)) begin result = 'hfc00; inVFlag = '0; specialCaseFlag = '1; end
+		else if((checkXInfP&checkYInfN)|(checkXInfN&checkYInfP)&(checkZZero)) begin result = 'hfc00; inVFlag = 0; specialCaseFlag = 1; end
+
+		// // If theres an INF in product and INF in z
+		else if ((checkXInf|checkYInf)&(checkZInf)) begin result = NaN; inVFlag = '1; specialCaseFlag = '1; end
+
+		// logic if the product is zero but the addend is not
+		else if ((checkXZero|checkYZero)&(~checkZZero)) begin result = z; inVFlag = '0; specialCaseFlag = 1; end
 
 		// NaN indeterminate subtraction
-		else if ((product == infP)&(z == infN)|(product == infN)&(z == infP)) begin result = NaN; inVFlag = '1;specialCaseFlag = '1; end
+		else if ((product == infP)&(z == infN)|(product == infN)&(z == infP)) 
+			if (product[15] ^ z[15]) begin result = NaN; inVFlag = '1;specialCaseFlag = '1; end
+			else begin result = '0; inVFlag = '0; specialCaseFlag = 0; end
 		
 		// check overflow flag as well as if the product and addend have different signs to produce infinity variants
 		else if (oFFlag) 
 			if (product[15]^z[15]) 	begin result = '0; inVFlag = '0; specialCaseFlag = '0; end
 			else 					begin result = (sum[15]) ? infN : infP; inVFlag = '0; specialCaseFlag = '1; end
 
-		// product is zero and 
+		// logic if the product and addend are both zero
+		else if ((checkXZero|checkYZero)&checkZZero)
+			if ((~Xs&Ys&Zs)|(Xs&~Ys&Zs)) 	begin result = 'h8000; inVFlag = '0; specialCaseFlag = '1; end
+			else 							begin result = 'h0000; inVFlag = '0; specialCaseFlag = '1; end
 
 		// at least one of the inputs are inf
 		else if ((x == infP | y == infP) & (x[15] ^ y[15])) begin result = infN; inVFlag = '0;specialCaseFlag = '1; end
@@ -95,12 +114,12 @@
 		else if ((x == infN | y == infN) & (x[15] ^ y[15])) begin result = infN; inVFlag = '0;specialCaseFlag = '1; end
 		else if ((x == infN | y == infN) & (x[15] ~^ y[15])) begin result = infP; inVFlag = '0; specialCaseFlag = '1; end
 		else if (((x==(zeroN)&(y==zeroN))&(z==zeroN))) begin result = zeroP; inVFlag = '0; specialCaseFlag = '1; end
-		else if (((x==(zeroP|zeroN)|(y==(zeroP|zeroN)))&(z==zeroP))) begin result = zeroP; inVFlag = '0; specialCaseFlag = '1; end
+		else if (((checkXZero)|(checkYZero)&(z==zeroP))) begin result = zeroP; inVFlag = '0; specialCaseFlag = '1; end
 		else if (((x==(zeroP|zeroN)|(y==(zeroP|zeroN)))&(z==zeroN))) begin result = zeroN; inVFlag = '0; specialCaseFlag = '1; end
 
 		// at least one input is a zero
 		else if (checkXZero|checkYZero|checkZZero) begin result = sum; inVFlag = '0; specialCaseFlag = '1; end
-		else                                              begin result = sum; inVFlag = '0; specialCaseFlag = '0; end
+		else                                       begin result = sum; inVFlag = '0; specialCaseFlag = '0; end
    end
 
 	// outputs the flags

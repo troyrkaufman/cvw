@@ -72,6 +72,7 @@ module fmaround(input logic     [15:0]  product, z, sum,
             if (overFlowFlag & sign)        begin roundResult = {sign, maxNum}; roundFlag = '1; end
             else if (overFlowFlag & ~sign)  begin roundResult = infP; roundFlag = '1; end
             else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(guard|(lsb&(fullPm[20:11]<fullSum[32:23])))&(z!=zeroN&z!=zeroP)) 
+            //else if ((product[15]^z[15])&(nSigFlag==2'b10|nSigFlag==2'b01)&(guard)&(z!=zeroN&z!=zeroP))
                                             begin roundResult = {sign, (sum[14:0] - 15'b1)}; roundFlag = '1; end
             else                            begin roundResult = 'h0; roundFlag = 0; end
     // RP rounding (currently has sign and rounding issues)

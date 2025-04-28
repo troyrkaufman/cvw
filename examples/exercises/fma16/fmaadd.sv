@@ -143,7 +143,7 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
         else if ((nsig == 2'b10)) 
             begin Mm = z[9:0]; Me = z[14:10]; tempMm = '0; end
         else 
-            if (addType == 2'b00 & checkSm[33] & ~shiftPmFlag) 
+            if (((addType == 2'b00) & checkSm[33] & ~shiftPmFlag)) // might need to get rid of the second part
                 begin   tempMm = checkSm << ZeroCnt; 
                         Mm = tempMm[32:23]; 
                         Me = Pe + 1'b1; 
@@ -156,6 +156,11 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
             end
     end
 
+    /*
+        outline: if product's expoenent is zero, take addend's value
+        if opposite signs subtract by 1. If same sign keep addend's value. no rounding required.
+    */
+
     // summed mantissa that is properly normalized. This value is crucial for the rounding logic.
     assign fullSum = checkSm<<ZeroCnt;
 
@@ -164,4 +169,5 @@ module fmaadd(  input logic [15:0]  product, x, y, z,
 
     // bit swizzle results together for the sum
     assign sum = {sign,Me,Mm};
+    
 endmodule
