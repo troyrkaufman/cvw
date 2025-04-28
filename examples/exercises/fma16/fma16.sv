@@ -28,6 +28,7 @@ module fma16(input logic  [15:0]    x, y, z,
     logic           multOp;             // multiplication operation authorized
     logic           addOp;              // addition operation authorized
     logic           mulAddOp;           // fma operation authorized
+    logic [1:0]     addType;
 
     // identify which operation is authorized
     assign multOp = (mul&~add) ? '1 : '0; 
@@ -46,13 +47,13 @@ module fma16(input logic  [15:0]    x, y, z,
     fmamult multunit(.x(flipX), .y(flipY), .product(product), .fullPm(fullPm));
 
     // floating point addition module
-    fmaadd addunit(.product(product), .x(flipX), .y(flipY), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum), .nSigFlag(nSigFlag));
+    fmaadd addunit(.product(product), .x(flipX), .y(flipY), .z(flipZ), .fullPm(fullPm), .mul(mul), .add(add), .sum(sum), .fullSum(fullSum), .nSigFlag(nSigFlag), .additionType(addType));
 
     // floating point special scenarios and flags module
     specialCases specCase(.x(flipX), .y(flipY), .z(flipZ), .product(product), .sum(sum), .nonZeroMantFlag(nonZeroMantFlag), .result(specialResult), .specialCaseFlag(specialCaseFlag), .overFlowFlag        (overFlowFlag), .flags(flags));
 
     // floating point rounding module
-    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .nSigFlag(nSigFlag), .overFlowFlag(overFlowFlag), .multOp(multOp), .addOp(addOp), .roundMode(roundMode), .roundResult(roundResult), .nonZeroMantFlag(nonZeroMantFlag), .roundFlag(roundFlag));
+    fmaround roundunit(.product(product), .z(flipZ), .sum(sum), .fullPm(fullPm), .fullSum(fullSum), .nSigFlag(nSigFlag), .addType(addType), .overFlowFlag(overFlowFlag), .multOp(multOp), .addOp(addOp), .roundMode(roundMode), .roundResult(roundResult), .nonZeroMantFlag(nonZeroMantFlag), .roundFlag(roundFlag));
 
     // Choose which result to output based on special, operation, and rounding flags
     always_comb begin : finalResult
